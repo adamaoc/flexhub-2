@@ -24,7 +24,7 @@ async function createInvite() {
       console.log('No super admin found. Creating one first...')
       const newSuperAdmin = await prisma.user.create({
         data: {
-          email: 'admin@flexhub.com',
+          email: 'adamaoc@gmail.com',
           name: 'Super Admin',
           role: 'SUPERADMIN',
           isActive: true,
