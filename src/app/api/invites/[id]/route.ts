@@ -62,7 +62,7 @@ export async function PATCH(
     // Update the invite
     const updatedInvite = await prisma.invite.update({
       where: { id },
-      data: { role: role as any },
+      data: { role: role as 'USER' | 'ADMIN' | 'SUPERADMIN' },
       include: {
         inviter: {
           select: {

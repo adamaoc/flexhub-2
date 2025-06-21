@@ -81,14 +81,6 @@ export default function SitesPage() {
     fetchSites();
   }, []);
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
   const getPublishedCount = (items: Array<{ isPublished: boolean }>) => {
     return items.filter(item => item.isPublished).length;
   };
@@ -101,7 +93,7 @@ export default function SitesPage() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Access Denied</h1>
             <p className="text-muted-foreground mt-2">
-              You don't have permission to access this page. Admin privileges required.
+              You don&apos;t have permission to access this page. Admin privileges required.
             </p>
           </div>
         </div>
@@ -181,7 +173,7 @@ export default function SitesPage() {
                   <Globe className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No sites found</h3>
                   <p className="text-muted-foreground">
-                    You don't have access to any sites yet.
+                    You don&apos;t have access to any sites yet.
                   </p>
                 </div>
               </CardContent>

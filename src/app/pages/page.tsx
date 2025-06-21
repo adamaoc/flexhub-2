@@ -1,25 +1,14 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
 import { useCurrentSite } from '@/hooks/use-current-site';
 import { PageEditor } from '@/components/PageEditor';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  FileText, 
-  Calendar,
-  Eye,
-  EyeOff,
-  RefreshCw,
-  Search
-} from 'lucide-react';
+import { FileText, Plus, Search, Edit, Eye, EyeOff, RefreshCw, Calendar } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 
@@ -31,10 +20,13 @@ interface Page {
   isPublished: boolean;
   createdAt: string;
   updatedAt: string;
+  author: {
+    name: string | null;
+    email: string;
+  };
 }
 
 export default function PagesPage() {
-  const { data: session } = useSession();
   const { currentSite } = useCurrentSite();
   const [pages, setPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,9 +35,9 @@ export default function PagesPage() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<Page | null>(null);
 
-  const fetchPages = async () => {
-    if (!currentSite) return;
-
+  const fetchPages = useCallback(async () => {
+    if (!currentSite?.id) return;
+    
     try {
       setLoading(true);
       setError(null);
@@ -57,17 +49,17 @@ export default function PagesPage() {
       }
       
       const data = await response.json();
-      setPages(data.pages);
+      setPages(data.pages || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentSite?.id]);
 
   useEffect(() => {
     fetchPages();
-  }, [currentSite]);
+  }, [fetchPages]);
 
   const handleCreatePage = () => {
     setEditingPage(null);
@@ -113,7 +105,7 @@ export default function PagesPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Pages</h1>
             <p className="text-muted-foreground">
-              Manage your site's static pages
+              Manage your site&apos;s static pages
             </p>
           </div>
           

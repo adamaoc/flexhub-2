@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { randomBytes } from 'crypto'
+import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden: Super admin access required' }, { status: 403 })
     }
 
-    // Parse request body
-    const { email, role = 'USER' } = await request.json()
+    const body = await request.json()
+    const { email, role } = body
 
-    if (!email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 })
+    if (!email || !role) {
+      return NextResponse.json({ error: 'Email and role are required' }, { status: 400 })
     }
 
     // Validate role
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingUser) {
-      return NextResponse.json({ error: 'User already exists with this email' }, { status: 400 })
+      return NextResponse.json({ error: 'User already exists' }, { status: 409 })
     }
 
     // Check if invite already exists
@@ -55,32 +55,36 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingInvite) {
-      return NextResponse.json({ error: 'Invite already exists for this email' }, { status: 400 })
+      return NextResponse.json({ error: 'Invite already exists for this email' }, { status: 409 })
     }
 
-    // Create new invite
-    const inviteToken = randomBytes(32).toString('hex')
+    // Create invite
     const invite = await prisma.invite.create({
       data: {
         email,
-        role: role as any,
-        token: inviteToken,
-        invitedBy: dbUser.id, // Use the database user ID
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        role: role as 'USER' | 'ADMIN' | 'SUPERADMIN',
+        token: crypto.randomUUID(),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        inviter: {
+          connect: {
+            id: dbUser.id
+          }
+        }
       },
+      include: {
+        inviter: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      }
     })
 
     return NextResponse.json({
       success: true,
-      invite: {
-        id: invite.id,
-        email: invite.email,
-        role: invite.role,
-        token: invite.token,
-        expiresAt: invite.expiresAt,
-        invitedAt: invite.invitedAt
-      }
-    })
+      invite
+    }, { status: 201 })
 
   } catch (error) {
     console.error('Error creating invite:', error)
@@ -88,7 +92,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     
@@ -97,7 +101,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Only super admins can access invite data
-    if (session.user.role !== 'SUPERADMIN') {
+    if (session.user?.role !== 'SUPERADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -111,12 +115,7 @@ export async function GET(request: NextRequest) {
         invitedAt: true,
         usedAt: true,
         invitedBy: true,
-        inviter: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
+        inviter: true,
       },
       orderBy: {
         invitedAt: 'desc'

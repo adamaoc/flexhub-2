@@ -21,7 +21,7 @@ export default function ContentPage() {
               Content Dashboard
             </h3>
             <p className="text-sm text-muted-foreground">
-              This is where you'll manage your content, create new pages, and organize your media files.
+              This is where you&apos;ll manage your content, create new pages, and organize your media files.
             </p>
           </div>
         </div>

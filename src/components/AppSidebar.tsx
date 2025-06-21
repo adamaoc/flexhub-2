@@ -12,7 +12,6 @@ import {
   LogOut,
   User,
   ChevronRight,
-  Plus,
   Shield,
   Globe,
   File

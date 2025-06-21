@@ -21,7 +21,7 @@ export default function SettingsPage() {
               Application Settings
             </h3>
             <p className="text-sm text-muted-foreground">
-              This is where you'll configure application settings, manage integrations, and customize your experience.
+              This is where you will configure application settings, manage integrations, and customize your experience.
             </p>
           </div>
         </div>

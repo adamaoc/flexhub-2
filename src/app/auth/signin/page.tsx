@@ -30,6 +30,7 @@ export default function SignInPage() {
       }
     } catch (error) {
       setError('An error occurred during sign in.')
+      console.log(error)
     } finally {
       setIsLoading(false)
     }
@@ -46,6 +47,7 @@ export default function SignInPage() {
       }
     } catch (error) {
       setError('An error occurred during sign in.')
+      console.log(error)
     } finally {
       // setIsLoading(false)
       // console.log('you are logged in')

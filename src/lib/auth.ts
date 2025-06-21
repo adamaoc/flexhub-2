@@ -3,6 +3,43 @@ import GoogleProvider from "next-auth/providers/google"
 import GitHubProvider from "next-auth/providers/github"
 import { prisma } from "./prisma"
 
+interface SignInParams {
+  user: {
+    email?: string | null;
+    name?: string | null;
+    image?: string | null;
+  };
+  account: {
+    provider?: string;
+  } | null;
+}
+
+// interface SessionParams {
+//   session: {
+//     user?: {
+//       id?: string;
+//       role?: string;
+//       isActive?: boolean;
+//     };
+//   };
+//   token: {
+//     userId?: string;
+//     role?: string;
+//     isActive?: boolean;
+//   };
+// }
+
+// interface JWTParams {
+//   token: {
+//     userId?: string;
+//     role?: string;
+//     isActive?: boolean;
+//   };
+//   user?: {
+//     email?: string | null;
+//   };
+// }
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -15,7 +52,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }: SignInParams) {
       console.log('🔐 SignIn callback triggered')
       console.log('User email:', user.email)
       console.log('Provider:', account?.provider)

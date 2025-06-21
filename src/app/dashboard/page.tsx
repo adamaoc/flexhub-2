@@ -7,10 +7,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Globe, Users, FileText, Image, Calendar, ExternalLink } from 'lucide-react';
+import { Globe, Users, FileText, Image, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
+interface MediaFile {
+  id: string;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  url: string;
+  createdAt: string;
+}
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -29,7 +39,7 @@ export default function DashboardPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const getTotalMediaSize = (mediaFiles: any[]) => {
+  const getTotalMediaSize = (mediaFiles: MediaFile[]) => {
     return mediaFiles.reduce((total, file) => total + file.size, 0);
   };
 
@@ -146,7 +156,7 @@ export default function DashboardPage() {
                   
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Image className="h-4 w-4 text-purple-500" />
+                      <Image className="h-5 w-5" />
                       <span className="text-sm font-medium">Media Files</span>
                     </div>
                     <div className="text-2xl font-bold">{currentSite._count.mediaFiles}</div>
@@ -271,7 +281,7 @@ export default function DashboardPage() {
                 <Globe className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No sites found</h3>
                 <p className="text-muted-foreground mb-4">
-                  You don't have access to any sites yet. Contact your administrator to get access.
+                  You don&apos;t have access to any sites yet. Contact your administrator to get access.
                 </p>
                 <Button onClick={refreshSite} variant="outline">
                   Refresh

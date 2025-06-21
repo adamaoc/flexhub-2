@@ -21,7 +21,6 @@ import {
   XCircle,
   Trash
 } from 'lucide-react'
-import { PrismaClient } from '@prisma/client'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,8 +32,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-
-const prisma = new PrismaClient()
 
 interface User {
   id: string
@@ -256,7 +253,7 @@ export default function UserManagementPage() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Access Denied</h1>
             <p className="text-muted-foreground mt-2">
-              You don't have permission to access this page.
+              You don&apos;t have permission to access this page.
             </p>
           </div>
         </div>
