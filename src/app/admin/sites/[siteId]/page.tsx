@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Globe, Users, FileText, Image, Calendar, ArrowLeft, Save, UserPlus, UserMinus } from 'lucide-react';
+import { Globe, Users, FileText, Image as ImageIcon, Calendar, ArrowLeft, Save, UserPlus, UserMinus } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Site {
@@ -92,7 +92,7 @@ export default function EditSitePage() {
     domain: '',
   });
 
-  const fetchSite = async () => {
+  const fetchSite = useCallback(async () => {
     try {
       setLoading(true);
       console.log('🔍 Fetching site with ID:', siteId);
@@ -122,9 +122,9 @@ export default function EditSitePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [siteId]);
 
-  const fetchAvailableUsers = async () => {
+  const fetchAvailableUsers = useCallback(async () => {
     try {
       const response = await fetch('/api/users');
       if (response.ok) {
@@ -137,19 +137,19 @@ export default function EditSitePage() {
     } catch (error) {
       console.error('Failed to fetch available users:', error);
     }
-  };
+  }, [site]);
 
   useEffect(() => {
     if (siteId) {
       fetchSite();
     }
-  }, [siteId]);
+  }, [siteId, fetchSite]);
 
   useEffect(() => {
     if (site && addUserModalOpen) {
       fetchAvailableUsers();
     }
-  }, [site, addUserModalOpen]);
+  }, [site, addUserModalOpen, fetchAvailableUsers]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -436,7 +436,7 @@ export default function EditSitePage() {
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 mb-1">
-                      <Image className="h-3 w-3" />
+                      <ImageIcon className="h-3 w-3" />
                       <span className="font-medium">{site._count.mediaFiles}</span>
                     </div>
                     <span className="text-muted-foreground">Media</span>

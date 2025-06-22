@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { siteId: string; userId: string } }
+  { params }: { params: Promise<{ siteId: string; userId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -27,7 +27,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
-    const { siteId, userId } = params;
+    const { siteId, userId } = await params;
 
     // Check if site exists
     const site = await prisma.site.findUnique({

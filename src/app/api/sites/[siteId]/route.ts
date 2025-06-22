@@ -5,9 +5,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: Request,
-  { params }: { params: { siteId: string } }
+  { params }: { params: Promise<{ siteId: string }> }
 ) {
   try {
+    const { siteId } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
@@ -21,8 +22,6 @@ export async function GET(
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-
-    const { siteId } = params;
 
     // Role-based access control
     let site;
@@ -220,9 +219,10 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { siteId: string } }
+  { params }: { params: Promise<{ siteId: string }> }
 ) {
   try {
+    const { siteId } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
@@ -242,7 +242,6 @@ export async function PUT(
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
-    const { siteId } = params;
     const body = await request.json();
     const { name, domain } = body;
 

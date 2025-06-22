@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Globe, Users, FileText, Image, Calendar, Plus } from 'lucide-react';
+import { Globe, Users, FileText, Image as ImageIcon, Calendar, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 
@@ -359,7 +359,7 @@ export default function SitesPage() {
                       </div>
                       <div className="text-center">
                         <div className="flex items-center justify-center gap-1 mb-1">
-                          <Image className="h-3 w-3" />
+                          <ImageIcon className="h-3 w-3" />
                           <span className="font-medium">{site._count.mediaFiles}</span>
                         </div>
                         <span className="text-muted-foreground">Media</span>

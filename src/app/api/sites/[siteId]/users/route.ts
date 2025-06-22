@@ -5,9 +5,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(
   request: Request,
-  { params }: { params: { siteId: string } }
+  { params }: { params: Promise<{ siteId: string }> }
 ) {
   try {
+    const { siteId } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
@@ -27,7 +28,6 @@ export async function POST(
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
-    const { siteId } = params;
     const body = await request.json();
     const { userId } = body;
 

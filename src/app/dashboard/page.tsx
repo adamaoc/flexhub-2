@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Globe, Users, FileText, Image, ExternalLink } from 'lucide-react';
+import { Globe, Users, FileText, Image as ImageIcon, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -156,7 +156,7 @@ export default function DashboardPage() {
                   
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Image className="h-5 w-5" />
+                      <ImageIcon className="h-5 w-5" />
                       <span className="text-sm font-medium">Media Files</span>
                     </div>
                     <div className="text-2xl font-bold">{currentSite._count.mediaFiles}</div>
