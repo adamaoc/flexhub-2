@@ -84,7 +84,7 @@ export default function UserManagementPage() {
       }
       
       const data = await response.json()
-      setUsers(data)
+      setUsers(data.users || data) // Handle both new format { users: [...] } and old format [...]
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {

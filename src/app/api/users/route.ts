@@ -45,7 +45,7 @@ export async function GET() {
       createdAt: user.createdAt.toISOString()
     }))
 
-    return NextResponse.json(transformedUsers)
+    return NextResponse.json({ users: transformedUsers })
   } catch (error) {
     console.error('Error fetching users:', error)
     return NextResponse.json(

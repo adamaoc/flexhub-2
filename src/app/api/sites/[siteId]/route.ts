@@ -3,7 +3,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(
+  request: Request,
+  { params }: { params: { siteId: string } }
+) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -13,19 +16,20 @@ export async function GET() {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { sites: true },
     });
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    let sites;
+    const { siteId } = params;
 
     // Role-based access control
+    let site;
     if (user.role === 'SUPERADMIN') {
-      // Super admins can see all sites
-      sites = await prisma.site.findMany({
+      // Super admins can access any site
+      site = await prisma.site.findUnique({
+        where: { id: siteId },
         include: {
           users: {
             select: {
@@ -74,12 +78,12 @@ export async function GET() {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
       });
     } else if (user.role === 'ADMIN') {
-      // Admins can see sites they're connected to
-      sites = await prisma.site.findMany({
+      // Admins can only access sites they're connected to
+      site = await prisma.site.findFirst({
         where: {
+          id: siteId,
           users: {
             some: {
               id: user.id,
@@ -134,12 +138,12 @@ export async function GET() {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
       });
     } else {
-      // Regular users can only see sites they're connected to
-      sites = await prisma.site.findMany({
+      // Regular users can only access sites they're connected to
+      site = await prisma.site.findFirst({
         where: {
+          id: siteId,
           users: {
             some: {
               id: user.id,
@@ -197,13 +201,16 @@ export async function GET() {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
       });
     }
 
-    return NextResponse.json({ sites });
+    if (!site) {
+      return NextResponse.json({ error: 'Site not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ site });
   } catch (error) {
-    console.error('Error fetching sites:', error);
+    console.error('Error fetching site:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -211,7 +218,10 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function PUT(
+  request: Request,
+  { params }: { params: { siteId: string } }
+) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -227,11 +237,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Only ADMIN and SUPERADMIN can create sites
-    if (user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
+    // Only SUPERADMIN can edit sites
+    if (user.role !== 'SUPERADMIN') {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
+    const { siteId } = params;
     const body = await request.json();
     const { name, domain } = body;
 
@@ -248,40 +259,47 @@ export async function POST(request: Request) {
       }
     }
 
-    // Check if site name already exists
-    const existingSite = await prisma.site.findFirst({
+    // Check if site exists
+    const existingSite = await prisma.site.findUnique({
+      where: { id: siteId },
+    });
+
+    if (!existingSite) {
+      return NextResponse.json({ error: 'Site not found' }, { status: 404 });
+    }
+
+    // Check if site name already exists (excluding current site)
+    const duplicateName = await prisma.site.findFirst({
       where: {
         name: name.trim(),
+        id: { not: siteId },
       },
     });
 
-    if (existingSite) {
+    if (duplicateName) {
       return NextResponse.json({ error: 'A site with this name already exists' }, { status: 409 });
     }
 
-    // Check if domain already exists (if provided)
+    // Check if domain already exists (excluding current site)
     if (domain && domain.trim().length > 0) {
-      const existingDomain = await prisma.site.findFirst({
+      const duplicateDomain = await prisma.site.findFirst({
         where: {
           domain: domain.trim(),
+          id: { not: siteId },
         },
       });
 
-      if (existingDomain) {
+      if (duplicateDomain) {
         return NextResponse.json({ error: 'A site with this domain already exists' }, { status: 409 });
       }
     }
 
-    // Create the site and connect the current user to it
-    const site = await prisma.site.create({
+    // Update the site
+    const updatedSite = await prisma.site.update({
+      where: { id: siteId },
       data: {
         name: name.trim(),
         domain: domain && domain.trim().length > 0 ? domain.trim() : null,
-        users: {
-          connect: {
-            id: user.id,
-          },
-        },
       },
       include: {
         users: {
@@ -303,9 +321,9 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ site }, { status: 201 });
+    return NextResponse.json({ site: updatedSite });
   } catch (error) {
-    console.error('Error creating site:', error);
+    console.error('Error updating site:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

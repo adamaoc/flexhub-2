@@ -7,8 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Globe, Users, FileText, Image, Calendar } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Globe, Users, FileText, Image, Calendar, Plus } from 'lucide-react';
 import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
 
 interface Site {
   id: string;
@@ -58,6 +62,14 @@ export default function SitesPage() {
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    domain: '',
+  });
+  const router = useRouter();
 
   const fetchSites = async () => {
     try {
@@ -83,6 +95,53 @@ export default function SitesPage() {
 
   const getPublishedCount = (items: Array<{ isPublished: boolean }>) => {
     return items.filter(item => item.isPublished).length;
+  };
+
+  const handleCreateSite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name.trim()) {
+      setCreateError('Site name is required');
+      return;
+    }
+
+    try {
+      setCreateLoading(true);
+      setCreateError(null);
+
+      const response = await fetch('/api/sites', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          domain: formData.domain.trim() || null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create site');
+      }
+
+      // Add the new site to the list
+      setSites(prevSites => [data.site, ...prevSites]);
+      
+      // Reset form and close modal
+      setFormData({ name: '', domain: '' });
+      setCreateModalOpen(false);
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: 'name' | 'domain', value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (createError) setCreateError(null);
   };
 
   // Check if user has access to sites (admin or super admin)
@@ -161,9 +220,68 @@ export default function SitesPage() {
                 Manage your sites and their content
               </p>
             </div>
-            <Button onClick={fetchSites} variant="outline">
-              Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Site
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Create New Site</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateSite} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Site Name *</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        placeholder="Enter site name"
+                        disabled={createLoading}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="domain">Domain (Optional)</Label>
+                      <Input
+                        id="domain"
+                        value={formData.domain}
+                        onChange={(e) => handleInputChange('domain', e.target.value)}
+                        placeholder="example.com"
+                        disabled={createLoading}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Leave empty if you don&apos;t have a domain yet
+                      </p>
+                    </div>
+                    {createError && (
+                      <div className="text-sm text-destructive">
+                        {createError}
+                      </div>
+                    )}
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setCreateModalOpen(false)}
+                        disabled={createLoading}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={createLoading}>
+                        {createLoading ? 'Creating...' : 'Create Site'}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+              <Button onClick={fetchSites} variant="outline">
+                Refresh
+              </Button>
+            </div>
           </div>
 
           {sites.length === 0 ? (
@@ -181,21 +299,36 @@ export default function SitesPage() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {sites.map((site) => (
-                <Card key={site.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <CardTitle className="text-xl">{site.name}</CardTitle>
-                        {site.domain && (
-                          <CardDescription className="flex items-center gap-1">
-                            <Globe className="h-3 w-3" />
-                            {site.domain}
-                          </CardDescription>
-                        )}
-                      </div>
+                <Card
+                  key={site.id}
+                  className="hover:shadow-md transition-shadow cursor-pointer group"
+                  onClick={() => router.push(`/admin/sites/${site.id}`)}
+                >
+                  <CardHeader className="flex flex-row items-start justify-between">
+                    <div className="space-y-1">
+                      <CardTitle className="text-xl">{site.name}</CardTitle>
+                      {site.domain && (
+                        <CardDescription className="flex items-center gap-1">
+                          <Globe className="h-3 w-3" />
+                          {site.domain}
+                        </CardDescription>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
                       <Badge variant="secondary">
                         {site._count.users} user{site._count.users !== 1 ? 's' : ''}
                       </Badge>
+                      <Button
+                        size="sm"
+                        variant="link"
+                        className="p-0 h-auto text-xs text-primary underline opacity-80 group-hover:opacity-100"
+                        onClick={e => {
+                          e.stopPropagation();
+                          router.push(`/admin/sites/${site.id}`);
+                        }}
+                      >
+                        Edit
+                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">

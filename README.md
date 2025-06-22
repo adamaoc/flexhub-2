@@ -205,3 +205,6 @@ https://www.youtube.com/watch?v=_ER9jHiylAo
 
 Auth video
 https://www.youtube.com/watch?v=n-fVrzaikBQ
+
+Google Signin managed through txg gcc - 
+https://console.cloud.google.com/auth/clients?inv=1&invt=Ab0rRw&project=flexhub-ampnetmedia&supportedpurview=project
