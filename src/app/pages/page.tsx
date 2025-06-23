@@ -1,14 +1,11 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { File, Plus } from 'lucide-react';
+import { FileText, Plus } from 'lucide-react';
 
 export default function PagesPage() {
-  const { data: session } = useSession();
-
   return (
     <AuthenticatedLayout>
       <div className="space-y-6">
@@ -28,7 +25,7 @@ export default function PagesPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <File className="h-5 w-5" />
+              <FileText className="h-5 w-5" />
               Your Pages
             </CardTitle>
             <CardDescription>
@@ -37,7 +34,7 @@ export default function PagesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-center py-8">
-              <File className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No pages yet</h3>
               <p className="text-muted-foreground mb-4">
                 Create your first page to get started

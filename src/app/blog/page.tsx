@@ -1,14 +1,11 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, Plus } from 'lucide-react';
 
 export default function BlogPage() {
-  const { data: session } = useSession();
-
   return (
     <AuthenticatedLayout>
       <div className="space-y-6">

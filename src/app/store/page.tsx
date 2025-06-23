@@ -1,14 +1,11 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Store, Package, DollarSign, ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Plus, DollarSign, Package, Store } from 'lucide-react';
 
 export default function StorePage() {
-  const { data: session } = useSession();
-
   return (
     <AuthenticatedLayout>
       <div className="space-y-6">
@@ -20,7 +17,7 @@ export default function StorePage() {
             </p>
           </div>
           <Button>
-            <Package className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             Add Product
           </Button>
         </div>
@@ -98,7 +95,7 @@ export default function StorePage() {
               </p>
               <div className="flex gap-2 justify-center">
                 <Button>
-                  <Package className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4 mr-2" />
                   Add Product
                 </Button>
                 <Button variant="outline">

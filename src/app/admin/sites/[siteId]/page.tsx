@@ -22,7 +22,7 @@ interface SiteFeature {
   id: string;
   feature: string;
   isEnabled: boolean;
-  config: any;
+  config: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }

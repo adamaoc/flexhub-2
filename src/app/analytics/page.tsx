@@ -1,13 +1,10 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, TrendingUp, Users, Eye } from 'lucide-react';
 
 export default function AnalyticsPage() {
-  const { data: session } = useSession();
-
   return (
     <AuthenticatedLayout>
       <div className="space-y-6">
