@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
+import Image from 'next/image'
 import { useCurrentSite } from '@/hooks/use-current-site'
 import { 
   Home, 
@@ -16,7 +17,7 @@ import {
   Globe,
   File,
   ExternalLink,
-  Image,
+  Image as ImageIcon,
   Mail,
   MessageSquare,
   Store,
@@ -60,7 +61,7 @@ const FEATURE_CONFIG = {
   },
   MEDIA_FILES: {
     name: 'Media Files',
-    icon: Image,
+    icon: ImageIcon,
     href: '/media',
     description: 'Manage media files'
   },
@@ -176,8 +177,14 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <Link href="/dashboard" className="flex items-center space-x-2 px-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">F</span>
+          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center overflow-hidden">
+            <Image 
+              src="/favicon-32x32.png" 
+              alt="FlexHub Logo" 
+              width={32} 
+              height={32}
+              className="object-contain"
+            />
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-xl">FlexHub</span>

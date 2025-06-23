@@ -17,7 +17,28 @@ module.exports = {
   		}
   	},
   	extend: {
+  		fontFamily: {
+  			sans: ['Inter', 'Manrope', 'Urbanist', 'system-ui', 'sans-serif'],
+  		},
   		colors: {
+  			// FlexHub Custom Color Palette
+  			flexhub: {
+  				navy: {
+  					DEFAULT: '#0c152e',
+  					light: '#0f1e34',
+  					lighter: '#11273a',
+  					dark: '#0d152e',
+  					darker: '#0c152c',
+  				},
+  				accent: {
+  					cyan: '#06b6d4',
+  					teal: '#14b8a6',
+  				},
+  				text: {
+  					primary: '#ffffff',
+  					secondary: '#e5e7eb',
+  				}
+  			},
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
