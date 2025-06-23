@@ -3,7 +3,7 @@
 import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Image, Upload } from 'lucide-react';
+import { Image as ImageIcon, Upload } from 'lucide-react';
 
 export default function MediaPage() {
   return (
@@ -25,7 +25,7 @@ export default function MediaPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Image className="h-5 w-5" />
+              <ImageIcon className="h-5 w-5" />
               Your Media Library
             </CardTitle>
             <CardDescription>
@@ -34,7 +34,7 @@ export default function MediaPage() {
           </CardHeader>
           <CardContent>
             <div className="text-center py-8">
-              <Image className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No media files yet</h3>
               <p className="text-muted-foreground mb-4">
                 Upload your first media file to get started

@@ -14,22 +14,32 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark')
+  const [mounted, setMounted] = useState(false)
 
+  // Ensure we're on the client side
   useEffect(() => {
-    // Get theme from localStorage or default to dark
-    const savedTheme = localStorage.getItem('flexhub-theme') as Theme
-    if (savedTheme) {
-      setTheme(savedTheme)
-    }
+    setMounted(true)
   }, [])
 
   useEffect(() => {
-    // Update document class and localStorage when theme changes
-    const root = document.documentElement
-    root.classList.remove('light', 'dark')
-    root.classList.add(theme)
-    localStorage.setItem('flexhub-theme', theme)
-  }, [theme])
+    if (mounted) {
+      // Get theme from localStorage or default to dark
+      const savedTheme = localStorage.getItem('flexhub-theme') as Theme
+      if (savedTheme) {
+        setTheme(savedTheme)
+      }
+    }
+  }, [mounted])
+
+  useEffect(() => {
+    if (mounted) {
+      // Update document class and localStorage when theme changes
+      const root = document.documentElement
+      root.classList.remove('light', 'dark')
+      root.classList.add(theme)
+      localStorage.setItem('flexhub-theme', theme)
+    }
+  }, [theme, mounted])
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light')
