@@ -145,9 +145,15 @@ const baseNavigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
-const externalLinks = [
-  { name: 'Email Management', href: 'https://mail.zoho.com/zm/#mail/folder/inbox', icon: ExternalLink },
-]
+// External links configuration
+const EXTERNAL_LINKS_CONFIG = {
+  EMAIL_MANAGEMENT: {
+    name: 'Email Management',
+    href: 'https://mail.zoho.com/zm/#mail/folder/inbox',
+    icon: ExternalLink,
+    feature: 'EMAIL_MANAGEMENT'
+  }
+} as const;
 
 export function AppSidebar() {
   const pathname = usePathname()
@@ -159,10 +165,23 @@ export function AppSidebar() {
   }
   // Get enabled features for the current site
   const enabledFeatures = currentSite?.features?.filter(f => f.isEnabled) || []
+  
+  // Create dynamic external links based on enabled features
+  const externalLinks = Object.values(EXTERNAL_LINKS_CONFIG)
+    .filter(link => enabledFeatures.some(feature => feature.feature === link.feature))
+    .map(link => ({
+      name: link.name,
+      href: link.href,
+      icon: link.icon
+    }))
+
   // Create feature navigation items
   const featureNavigation = enabledFeatures.map(feature => {
     const config = FEATURE_CONFIG[feature.feature as keyof typeof FEATURE_CONFIG]
     if (!config) return null
+    
+    // Skip email management feature
+    if (feature.feature === 'EMAIL_MANAGEMENT') return null
     
     return {
       name: config.name,
