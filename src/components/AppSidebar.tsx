@@ -14,7 +14,21 @@ import {
   ChevronRight,
   Shield,
   Globe,
-  File
+  File,
+  ExternalLink,
+  Image,
+  Mail,
+  MessageSquare,
+  Store,
+  BarChart3,
+  Search,
+  Share2,
+  Languages,
+  FormInput,
+  Lock,
+  Calendar,
+  Newspaper,
+  Award
 } from 'lucide-react'
 import {
   Sidebar,
@@ -30,12 +44,108 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar'
 
-const navigation = [
+// Feature configuration with icons and routes
+const FEATURE_CONFIG = {
+  PAGES: {
+    name: 'Pages',
+    icon: File,
+    href: '/pages',
+    description: 'Manage static pages'
+  },
+  BLOG_POSTS: {
+    name: 'Blog Posts',
+    icon: FileText,
+    href: '/blog',
+    description: 'Manage blog content'
+  },
+  MEDIA_FILES: {
+    name: 'Media Files',
+    icon: Image,
+    href: '/media',
+    description: 'Manage media files'
+  },
+  EMAIL_MANAGEMENT: {
+    name: 'Email Management',
+    icon: Mail,
+    href: '/email',
+    description: 'Manage email campaigns'
+  },
+  CONTACT_MANAGEMENT: {
+    name: 'Contact Management',
+    icon: MessageSquare,
+    href: '/contacts',
+    description: 'Manage contact forms'
+  },
+  SPONSORS: {
+    name: 'Sponsors',
+    icon: Award,
+    href: '/sponsors',
+    description: 'Manage sponsors'
+  },
+  ONLINE_STORE: {
+    name: 'Online Store',
+    icon: Store,
+    href: '/store',
+    description: 'Manage e-commerce'
+  },
+  NEWSLETTER: {
+    name: 'Newsletter',
+    icon: Newspaper,
+    href: '/newsletter',
+    description: 'Manage newsletter'
+  },
+  ANALYTICS: {
+    name: 'Analytics',
+    icon: BarChart3,
+    href: '/analytics',
+    description: 'View site analytics'
+  },
+  SEO_TOOLS: {
+    name: 'SEO Tools',
+    icon: Search,
+    href: '/seo',
+    description: 'SEO optimization tools'
+  },
+  SOCIAL_MEDIA_INTEGRATION: {
+    name: 'Social Media',
+    icon: Share2,
+    href: '/social',
+    description: 'Social media integration'
+  },
+  MULTI_LANGUAGE: {
+    name: 'Multi Language',
+    icon: Languages,
+    href: '/languages',
+    description: 'Multi-language content'
+  },
+  CUSTOM_FORMS: {
+    name: 'Custom Forms',
+    icon: FormInput,
+    href: '/forms',
+    description: 'Create custom forms'
+  },
+  MEMBER_AREA: {
+    name: 'Member Area',
+    icon: Lock,
+    href: '/members',
+    description: 'Member-only content'
+  },
+  EVENT_MANAGEMENT: {
+    name: 'Event Management',
+    icon: Calendar,
+    href: '/events',
+    description: 'Manage events'
+  }
+} as const;
+
+const baseNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Pages', href: '/pages', icon: File },
-  { name: 'Content', href: '/content', icon: FileText },
   { name: 'Profile', href: '/profile', icon: Users },
   { name: 'Settings', href: '/settings', icon: Settings },
+]
+
+const externalLinks = [
+  { name: 'Email Management', href: 'https://mail.zoho.com/zm/#mail/folder/inbox', icon: ExternalLink },
 ]
 
 export function AppSidebar() {
@@ -46,6 +156,21 @@ export function AppSidebar() {
   const handleSignOut = () => {
     signOut({ callbackUrl: '/auth/signin' })
   }
+  // Get enabled features for the current site
+  const enabledFeatures = currentSite?.features?.filter(f => f.isEnabled) || []
+  // Create feature navigation items
+  const featureNavigation = enabledFeatures.map(feature => {
+    const config = FEATURE_CONFIG[feature.feature as keyof typeof FEATURE_CONFIG]
+    if (!config) return null
+    
+    return {
+      name: config.name,
+      href: config.href,
+      icon: config.icon,
+      description: config.description,
+      feature: feature.feature
+    }
+  }).filter((item): item is NonNullable<typeof item> => item !== null)
 
   return (
     <Sidebar>
@@ -70,7 +195,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigation.map((item) => {
+              {baseNavigation.map((item) => {
                 const isActive = pathname === item.href
                 return (
                   <SidebarMenuItem key={item.name}>
@@ -88,6 +213,54 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Feature-based Navigation */}
+        {featureNavigation.length > 0 && (
+          <>
+            <SidebarSeparator />
+            <SidebarGroup>
+              <SidebarGroupLabel>Site Features</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {featureNavigation.map((item) => {
+                    const isActive = pathname === item.href
+                    return (
+                      <SidebarMenuItem key={item.name}>
+                        <SidebarMenuButton asChild isActive={isActive} tooltip={item.description}>
+                          <Link href={item.href}>
+                            <item.icon />
+                            <span>{item.name}</span>
+                            {isActive && <ChevronRight className="ml-auto" />}
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
+
+        {/* External Links */}
+        <SidebarSeparator />
+        <SidebarGroup>
+          <SidebarGroupLabel>External Tools</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {externalLinks.map((item) => (
+                <SidebarMenuItem key={item.name}>
+                  <SidebarMenuButton asChild tooltip={item.name}>
+                    <a href={item.href} target="_blank" rel="noopener noreferrer">
+                      <item.icon />
+                      <span>{item.name}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         {/* Super User Actions */}
         {session?.user?.role === 'SUPERADMIN' && (
           <>
@@ -96,14 +269,6 @@ export function AppSidebar() {
               <SidebarGroupLabel>Admin</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {/* <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Create Invite">
-                      <Link href="/dashboard">
-                        <Plus />
-                        <span>Create Invite</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem> */}
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="User Management" isActive={pathname === '/admin/users'}>
                       <Link href="/admin/users">

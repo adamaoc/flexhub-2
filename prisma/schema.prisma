@@ -102,6 +102,7 @@ model Site {
   pages     Page[]
   blogPosts BlogPost[]
   mediaFiles MediaFile[]
+  features  SiteFeature[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -154,8 +155,40 @@ model MediaFile {
   @@map("media_files")
 }
 
+model SiteFeature {
+  id        String      @id @default(uuid())
+  siteId    String
+  site      Site        @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  feature   FeatureType
+  isEnabled Boolean     @default(true)
+  config    Json?       // Flexible configuration for feature-specific settings
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([siteId, feature])
+  @@map("site_features")
+}
+
 enum UserRole {
   USER
   ADMIN
   SUPERADMIN
+}
+
+enum FeatureType {
+  PAGES
+  BLOG_POSTS
+  MEDIA_FILES
+  EMAIL_MANAGEMENT
+  CONTACT_MANAGEMENT
+  SPONSORS
+  ONLINE_STORE
+  NEWSLETTER
+  ANALYTICS
+  SEO_TOOLS
+  SOCIAL_MEDIA_INTEGRATION
+  MULTI_LANGUAGE
+  CUSTOM_FORMS
+  MEMBER_AREA
+  EVENT_MANAGEMENT
 }

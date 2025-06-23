@@ -14,8 +14,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Globe, Users, FileText, Image as ImageIcon, Calendar, ArrowLeft, Save, UserPlus, UserMinus } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Globe, Users, FileText, Image as ImageIcon, Calendar, ArrowLeft, Save, UserPlus, UserMinus, Settings, Plus, X } from 'lucide-react';
 import { format } from 'date-fns';
+
+interface SiteFeature {
+  id: string;
+  feature: string;
+  isEnabled: boolean;
+  config: any;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface Site {
   id: string;
@@ -54,6 +64,7 @@ interface Site {
     url: string;
     createdAt: string;
   }>;
+  features: SiteFeature[];
   _count: {
     pages: number;
     blogPosts: number;
@@ -69,6 +80,25 @@ interface User {
   role: string;
   image?: string | null;
 }
+
+// Available feature types
+const AVAILABLE_FEATURES = [
+  { value: 'PAGES', label: 'Pages', description: 'Create and manage static pages' },
+  { value: 'BLOG_POSTS', label: 'Blog Posts', description: 'Publish and manage blog content' },
+  { value: 'MEDIA_FILES', label: 'Media Files', description: 'Upload and manage media files' },
+  { value: 'EMAIL_MANAGEMENT', label: 'Email Management', description: 'Manage email campaigns and templates' },
+  { value: 'CONTACT_MANAGEMENT', label: 'Contact Management', description: 'Manage contact forms and inquiries' },
+  { value: 'SPONSORS', label: 'Sponsors', description: 'Manage sponsor relationships and content' },
+  { value: 'ONLINE_STORE', label: 'Online Store', description: 'E-commerce functionality' },
+  { value: 'NEWSLETTER', label: 'Newsletter', description: 'Newsletter subscription and management' },
+  { value: 'ANALYTICS', label: 'Analytics', description: 'Site analytics and reporting' },
+  { value: 'SEO_TOOLS', label: 'SEO Tools', description: 'Search engine optimization tools' },
+  { value: 'SOCIAL_MEDIA_INTEGRATION', label: 'Social Media Integration', description: 'Connect with social media platforms' },
+  { value: 'MULTI_LANGUAGE', label: 'Multi Language', description: 'Multi-language content support' },
+  { value: 'CUSTOM_FORMS', label: 'Custom Forms', description: 'Create custom forms and surveys' },
+  { value: 'MEMBER_AREA', label: 'Member Area', description: 'Member-only content and features' },
+  { value: 'EVENT_MANAGEMENT', label: 'Event Management', description: 'Manage events and registrations' },
+];
 
 export default function EditSitePage() {
   const { data: session } = useSession();
@@ -86,6 +116,13 @@ export default function EditSitePage() {
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [addingUser, setAddingUser] = useState(false);
   const [removingUser, setRemovingUser] = useState<string | null>(null);
+  
+  // Features management state
+  const [addFeatureModalOpen, setAddFeatureModalOpen] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState<string>('');
+  const [addingFeature, setAddingFeature] = useState(false);
+  const [removingFeature, setRemovingFeature] = useState<string | null>(null);
+  const [togglingFeature, setTogglingFeature] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -243,6 +280,90 @@ export default function EditSitePage() {
     }
   };
 
+  // Features management functions
+  const handleAddFeature = async () => {
+    if (!selectedFeature) return;
+
+    try {
+      setAddingFeature(true);
+
+      const response = await fetch(`/api/sites/${siteId}/features`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          feature: selectedFeature,
+          isEnabled: true,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to add feature');
+      }
+
+      // Refresh site data to get updated features list
+      await fetchSite();
+      setSelectedFeature('');
+      setAddFeatureModalOpen(false);
+    } catch (error) {
+      console.error('Failed to add feature:', error);
+    } finally {
+      setAddingFeature(false);
+    }
+  };
+
+  const handleRemoveFeature = async (featureId: string) => {
+    try {
+      setRemovingFeature(featureId);
+
+      const response = await fetch(`/api/sites/${siteId}/features/${featureId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to remove feature');
+      }
+
+      // Refresh site data to get updated features list
+      await fetchSite();
+    } catch (error) {
+      console.error('Failed to remove feature:', error);
+    } finally {
+      setRemovingFeature(null);
+    }
+  };
+
+  const handleToggleFeature = async (featureId: string, isEnabled: boolean) => {
+    try {
+      setTogglingFeature(featureId);
+
+      const response = await fetch(`/api/sites/${siteId}/features/${featureId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isEnabled: !isEnabled,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update feature');
+      }
+
+      // Refresh site data to get updated features list
+      await fetchSite();
+    } catch (error) {
+      console.error('Failed to update feature:', error);
+    } finally {
+      setTogglingFeature(null);
+    }
+  };
+
   const handleInputChange = (field: 'name' | 'domain', value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (saveError) setSaveError(null);
@@ -250,6 +371,16 @@ export default function EditSitePage() {
 
   const getPublishedCount = (items: Array<{ isPublished: boolean }>) => {
     return items.filter(item => item.isPublished).length;
+  };
+
+  const getAvailableFeatures = () => {
+    if (!site) return AVAILABLE_FEATURES;
+    const enabledFeatures = site.features.map(f => f.feature);
+    return AVAILABLE_FEATURES.filter(f => !enabledFeatures.includes(f.value));
+  };
+
+  const getFeatureInfo = (featureType: string) => {
+    return AVAILABLE_FEATURES.find(f => f.value === featureType);
   };
 
   // Check if user has access (super admin only)
@@ -352,7 +483,7 @@ export default function EditSitePage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Edit Site</h1>
             <p className="text-muted-foreground">
-              Manage site details and user assignments
+              Manage site details, user assignments, and features
             </p>
           </div>
         </div>
@@ -563,6 +694,114 @@ export default function EditSitePage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Features Management */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Site Features ({site.features.length})
+                </CardTitle>
+                <CardDescription>
+                  Manage which features are available for this site
+                </CardDescription>
+              </div>
+              <Dialog open={addFeatureModalOpen} onOpenChange={setAddFeatureModalOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Feature
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Add Feature to Site</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="feature">Select Feature</Label>
+                      <Select value={selectedFeature} onValueChange={setSelectedFeature}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose a feature" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getAvailableFeatures().map((feature) => (
+                            <SelectItem key={feature.value} value={feature.value}>
+                              <div>
+                                <div className="font-medium">{feature.label}</div>
+                                <div className="text-xs text-muted-foreground">{feature.description}</div>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setAddFeatureModalOpen(false)}
+                        disabled={addingFeature}
+                      >
+                        Cancel
+                      </Button>
+                      <Button onClick={handleAddFeature} disabled={!selectedFeature || addingFeature}>
+                        {addingFeature ? 'Adding...' : 'Add Feature'}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {site.features.length === 0 ? (
+              <div className="text-center py-8">
+                <Settings className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">No features enabled for this site</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {site.features.map((feature) => {
+                  const featureInfo = getFeatureInfo(feature.feature);
+                  return (
+                    <div key={feature.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <div className="font-medium">{featureInfo?.label || feature.feature}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {featureInfo?.description || 'No description available'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={feature.isEnabled}
+                            onCheckedChange={() => handleToggleFeature(feature.id, feature.isEnabled)}
+                            disabled={togglingFeature === feature.id}
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            {feature.isEnabled ? 'Enabled' : 'Disabled'}
+                          </span>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRemoveFeature(feature.id)}
+                          disabled={removingFeature === feature.id}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AuthenticatedLayout>
   );

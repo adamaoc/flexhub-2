@@ -65,6 +65,16 @@ export async function GET() {
               createdAt: true,
             },
           },
+          features: {
+            select: {
+              id: true,
+              feature: true,
+              isEnabled: true,
+              config: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           _count: {
             select: {
               pages: true,
@@ -123,6 +133,16 @@ export async function GET() {
               size: true,
               url: true,
               createdAt: true,
+            },
+          },
+          features: {
+            select: {
+              id: true,
+              feature: true,
+              isEnabled: true,
+              config: true,
+              createdAt: true,
+              updatedAt: true,
             },
           },
           _count: {
@@ -186,6 +206,16 @@ export async function GET() {
               size: true,
               url: true,
               createdAt: true,
+            },
+          },
+          features: {
+            select: {
+              id: true,
+              feature: true,
+              isEnabled: true,
+              config: true,
+              createdAt: true,
+              updatedAt: true,
             },
           },
           _count: {

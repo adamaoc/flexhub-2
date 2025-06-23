@@ -3,6 +3,15 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 
+interface SiteFeature {
+  id: string;
+  feature: string;
+  isEnabled: boolean;
+  config: any;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface Site {
   id: string;
   name: string;
@@ -38,6 +47,7 @@ interface Site {
     url: string;
     createdAt: string;
   }>;
+  features: SiteFeature[];
   _count: {
     pages: number;
     blogPosts: number;
