@@ -9,7 +9,9 @@ declare module "next-auth" {
       image?: string | null;
       role?: string;
       isActive?: boolean;
+      isExpired?: boolean;
     };
+    authTime?: number;
   }
 
   interface User extends DefaultUser {
@@ -23,5 +25,7 @@ declare module "next-auth/jwt" {
     userId: string
     role: string
     isActive: boolean
+    authTime?: number
+    isExpired?: boolean
   }
 } 
