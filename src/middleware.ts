@@ -19,12 +19,13 @@ export const config = {
      * Match all request paths except for the ones starting with:
      * - api/auth (NextAuth.js routes)
      * - api/health (health check endpoint)
+     * - api/public (public API endpoints)
      * - auth (authentication pages)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - site.webmanifest (PWA manifest)
      */
-    '/((?!api/auth|api/health|auth|_next/static|_next/image|favicon.ico|site.webmanifest).*)',
+    '/((?!api/auth|api/health|api/public|auth|_next/static|_next/image|favicon.ico|site.webmanifest).*)',
   ],
 } 
