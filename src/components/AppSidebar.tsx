@@ -43,6 +43,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  useSidebar,
 } from '@/components/ui/sidebar'
 
 // Feature configuration with icons and routes
@@ -159,9 +160,17 @@ export function AppSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const { currentSite } = useCurrentSite()
+  const { setOpenMobile, isMobile } = useSidebar()
   
   const handleSignOut = () => {
     signOut({ callbackUrl: '/auth/signin' })
+  }
+
+  // Handler to close mobile sidebar when navigation occurs
+  const handleMobileNavigation = () => {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
   }
   // Get enabled features for the current site
   const enabledFeatures = currentSite?.features?.filter(f => f.isEnabled) || []
@@ -195,7 +204,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <Link href="/dashboard" className="flex items-center space-x-2 px-2">
+        <Link href="/dashboard" className="flex items-center space-x-2 px-2" onClick={handleMobileNavigation}>
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center overflow-hidden">
             <Image 
               src="/favicon-32x32.png" 
@@ -226,7 +235,7 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.name}>
                     <SidebarMenuButton asChild isActive={isActive} tooltip={item.name}>
-                      <Link href={item.href}>
+                      <Link href={item.href} onClick={handleMobileNavigation}>
                         <item.icon />
                         <span>{item.name}</span>
                         {isActive && <ChevronRight className="ml-auto" />}
@@ -252,7 +261,7 @@ export function AppSidebar() {
                     return (
                       <SidebarMenuItem key={item.name}>
                         <SidebarMenuButton asChild isActive={isActive} tooltip={item.description}>
-                          <Link href={item.href}>
+                          <Link href={item.href} onClick={handleMobileNavigation}>
                             <item.icon />
                             <span>{item.name}</span>
                             {isActive && <ChevronRight className="ml-auto" />}
@@ -268,24 +277,28 @@ export function AppSidebar() {
         )}
 
         {/* External Links */}
-        <SidebarSeparator />
-        <SidebarGroup>
-          <SidebarGroupLabel>External Tools</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {externalLinks.map((item) => (
-                <SidebarMenuItem key={item.name}>
-                  <SidebarMenuButton asChild tooltip={item.name}>
-                    <a href={item.href} target="_blank" rel="noopener noreferrer">
-                      <item.icon />
-                      <span>{item.name}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {externalLinks.length > 0 && (
+          <>
+            <SidebarSeparator />
+            <SidebarGroup>
+              <SidebarGroupLabel>External Tools</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {externalLinks.map((item) => (
+                    <SidebarMenuItem key={item.name}>
+                      <SidebarMenuButton asChild tooltip={item.name}>
+                        <a href={item.href} target="_blank" rel="noopener noreferrer">
+                          <item.icon />
+                          <span>{item.name}</span>
+                        </a>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
 
         {/* Super User Actions */}
         {session?.user?.role === 'SUPERADMIN' && (
@@ -297,7 +310,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="User Management" isActive={pathname === '/admin/users'}>
-                      <Link href="/admin/users">
+                      <Link href="/admin/users" onClick={handleMobileNavigation}>
                         <Shield />
                         <span>User Management</span>
                         {pathname === '/admin/users' && <ChevronRight className="ml-auto" />}
@@ -306,7 +319,7 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="Sites" isActive={pathname === '/admin/sites'}>
-                      <Link href="/admin/sites">
+                      <Link href="/admin/sites" onClick={handleMobileNavigation}>
                         <Globe />
                         <span>Sites</span>
                         {pathname === '/admin/sites' && <ChevronRight className="ml-auto" />}

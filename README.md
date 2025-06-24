@@ -188,17 +188,16 @@ NEXTAUTH_DEBUG=true
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Detailed Setup Guide](./NEXTAUTH_SETUP.md)
 
-## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+## Prisma after deploy
 
-## 📄 License
+```
+npm run db:generate
 
-This project is licensed under the MIT License.
+npx prisma migrate deploy
+
+npm run setup-production
+```
 
 prisma video
 https://www.youtube.com/watch?v=_ER9jHiylAo
