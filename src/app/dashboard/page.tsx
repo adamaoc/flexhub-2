@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
 import { SiteSwitcher } from '@/components/SiteSwitcher';
 import { FeatureStats } from '@/components/FeatureStats';
+import { RecentActivity } from '@/components/RecentActivity';
 import { useCurrentSite } from '@/hooks/use-current-site';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -90,69 +91,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Recent Activity */}
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Recent Pages */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Recent Pages</CardTitle>
-                  <CardDescription>
-                    Latest pages in your site
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {currentSite.pages.length > 0 ? (
-                    <div className="space-y-3">
-                      {currentSite.pages.slice(0, 3).map((page) => (
-                        <div key={page.id} className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">{page.title}</p>
-                            <p className="text-sm text-muted-foreground">/{page.slug}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant={page.isPublished ? "default" : "secondary"}>
-                              {page.isPublished ? "Published" : "Draft"}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No pages yet</p>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Recent Blog Posts */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Recent Blog Posts</CardTitle>
-                  <CardDescription>
-                    Latest blog posts in your site
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {currentSite.blogPosts.length > 0 ? (
-                    <div className="space-y-3">
-                      {currentSite.blogPosts.slice(0, 3).map((post) => (
-                        <div key={post.id} className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">{post.title}</p>
-                            <p className="text-sm text-muted-foreground">/{post.slug}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant={post.isPublished ? "default" : "secondary"}>
-                              {post.isPublished ? "Published" : "Draft"}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No blog posts yet</p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+            <RecentActivity currentSite={currentSite} />
 
             {/* Site Info */}
             <Card>
