@@ -115,6 +115,60 @@ Visit `http://localhost:3000` and sign in with an invited email address.
 - **JWT sessions** - Secure session management
 - **Database validation** - Server-side invite checking
 
+## 🌐 Public API Endpoints
+
+### Sponsors API
+
+The system provides a public, read-only API endpoint to retrieve sponsor information for external integrations.
+
+#### Get Site Sponsors
+
+```http
+GET /api/public/sites/{siteId}/sponsors
+```
+
+**Description**: Returns all active sponsors for a specific site.
+
+**Parameters**:
+- `siteId` - The unique identifier of the site
+
+**Response**: JSON array of sponsor objects
+
+**Example Request**:
+```bash
+curl https://yourdomain.com/api/public/sites/your-site-id/sponsors
+```
+
+**Example Response**:
+```json
+[
+  {
+    "id": "sponsor-id-1",
+    "name": "Acme Corporation",
+    "url": "https://acme.com",
+    "logo": "https://acme.com/logo.png"
+  },
+  {
+    "id": "sponsor-id-2",
+    "name": "Tech Solutions Inc",
+    "url": "https://techsolutions.com",
+    "logo": null
+  }
+]
+```
+
+**Features**:
+- ✅ No authentication required
+- ✅ CORS enabled for cross-origin requests
+- ✅ Returns only active sponsors
+- ✅ Includes only public information (excludes internal timestamps)
+- ✅ Validates sponsor feature is enabled for the site
+
+**Error Responses**:
+- `404` - Site not found
+- `403` - Sponsors feature not enabled for this site
+- `500` - Internal server error
+
 ## 📁 Project Structure
 
 ```
