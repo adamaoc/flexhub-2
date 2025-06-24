@@ -2,46 +2,19 @@
 
 import { useSession } from 'next-auth/react';
 import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
+import { SiteSwitcher } from '@/components/SiteSwitcher';
+import { FeatureStats } from '@/components/FeatureStats';
 import { useCurrentSite } from '@/hooks/use-current-site';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Globe, Users, FileText, Image as ImageIcon, ExternalLink } from 'lucide-react';
+import { Globe, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-
-interface MediaFile {
-  id: string;
-  filename: string;
-  originalName: string;
-  mimeType: string;
-  size: number;
-  url: string;
-  createdAt: string;
-}
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const { currentSite, sites, loading, error, refreshSite, setCurrentSite } = useCurrentSite();
-  const [switchModalOpen, setSwitchModalOpen] = useState(false);
-
-  const getPublishedCount = (items: Array<{ isPublished: boolean }>) => {
-    return items.filter(item => item.isPublished).length;
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const getTotalMediaSize = (mediaFiles: MediaFile[]) => {
-    return mediaFiles.reduce((total, file) => total + file.size, 0);
-  };
+  const { currentSite, loading, error, refreshSite } = useCurrentSite();
 
   return (
     <AuthenticatedLayout>
@@ -90,38 +63,19 @@ export default function DashboardPage() {
                     <CardTitle className="text-2xl flex items-center gap-2">
                       <Globe className="h-6 w-6" />
                       {currentSite.name}
-                      {sites && sites.length > 1 && (
-                        <Dialog open={switchModalOpen} onOpenChange={setSwitchModalOpen}>
-                          <DialogTrigger asChild>
-                            <Button size="sm" variant="outline" className="ml-2">Switch Site</Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Switch Site</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-2">
-                              {sites.filter(site => site.id !== currentSite.id).map(site => (
-                                <Button
-                                  key={site.id}
-                                  variant="ghost"
-                                  className="w-full justify-start"
-                                  onClick={() => {
-                                    setCurrentSite(site);
-                                    setSwitchModalOpen(false);
-                                  }}
-                                >
-                                  {site.name}
-                                </Button>
-                              ))}
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      )}
+                      <SiteSwitcher />
                     </CardTitle>
                     {currentSite.domain && (
-                      <CardDescription className="flex items-center gap-2">
-                        <ExternalLink className="h-4 w-4" />
-                        {currentSite.domain}
+                      <CardDescription>
+                        <a 
+                          href={`https://${currentSite.domain}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 hover:text-foreground transition-colors"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          {currentSite.domain}
+                        </a>
                       </CardDescription>
                     )}
                   </div>
@@ -131,51 +85,7 @@ export default function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm font-medium">Pages</span>
-                    </div>
-                    <div className="text-2xl font-bold">{currentSite._count.pages}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {getPublishedCount(currentSite.pages)} published
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-green-500" />
-                      <span className="text-sm font-medium">Blog Posts</span>
-                    </div>
-                    <div className="text-2xl font-bold">{currentSite._count.blogPosts}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {getPublishedCount(currentSite.blogPosts)} published
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <ImageIcon className="h-5 w-5" />
-                      <span className="text-sm font-medium">Media Files</span>
-                    </div>
-                    <div className="text-2xl font-bold">{currentSite._count.mediaFiles}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {formatFileSize(getTotalMediaSize(currentSite.mediaFiles))}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-orange-500" />
-                      <span className="text-sm font-medium">Team Members</span>
-                    </div>
-                    <div className="text-2xl font-bold">{currentSite._count.users}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {currentSite.users.filter(u => u.role === 'ADMIN').length} admins
-                    </div>
-                  </div>
-                </div>
+                <FeatureStats currentSite={currentSite} />
               </CardContent>
             </Card>
 
