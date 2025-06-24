@@ -133,10 +133,15 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.userId as string
         session.user.role = token.role as string
         session.user.isActive = token.isActive as boolean
+        // Add expiration flag to session for middleware to check
+        session.user.isExpired = token.isExpired as boolean
+        // Add authTime to session for client-side session management
+        session.authTime = token.authTime
       }
       return session
     },
     async jwt({ token, user }) {
+      // Check if this is a new sign-in
       if (user) {
         // Get user data from database
         const dbUser = await prisma.user.findUnique({
@@ -147,8 +152,21 @@ export const authOptions: NextAuthOptions = {
           token.userId = dbUser.id
           token.role = dbUser.role
           token.isActive = dbUser.isActive
+          // Set the initial authentication time
+          token.authTime = Math.floor(Date.now() / 1000)
         }
       }
+
+      // Check if session has expired (48 hours = 172800 seconds)
+      const sessionMaxAge = 48 * 60 * 60 // 48 hours in seconds
+      const now = Math.floor(Date.now() / 1000)
+      
+      if (token.authTime && typeof token.authTime === 'number' && (now - token.authTime) > sessionMaxAge) {
+        console.log('🕐 Session expired after 48 hours, marking as expired')
+        // Mark the token as expired but don't return null
+        token.isExpired = true
+      }
+
       return token
     },
   },
@@ -158,6 +176,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
+    maxAge: 48 * 60 * 60, // 48 hours in seconds
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: true, // Enable debug mode
