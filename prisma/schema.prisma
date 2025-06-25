@@ -104,6 +104,8 @@ model Site {
   mediaFiles MediaFile[]
   features  SiteFeature[]
   sponsors  Sponsor[]
+  contactForm ContactForm?
+  contactSubmissions ContactSubmission[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -184,6 +186,72 @@ model Sponsor {
   @@map("sponsors")
 }
 
+// Contact Management
+model ContactForm {
+  id          String             @id @default(uuid())
+  name        String             @default("Contact Form")
+  description String?
+  isActive    Boolean            @default(true)
+  siteId      String             @unique // One contact form per site for now
+  site        Site               @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  fields      ContactFormField[]
+  submissions ContactSubmission[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@map("contact_forms")
+}
+
+model ContactFormField {
+  id            String                  @id @default(uuid())
+  contactFormId String
+  contactForm   ContactForm             @relation(fields: [contactFormId], references: [id], onDelete: Cascade)
+  fieldName     String                  // e.g., "firstName", "email", "message"
+  fieldLabel    String                  // e.g., "First Name", "Email Address"
+  fieldType     ContactFormFieldType    @default(TEXT)
+  isRequired    Boolean                 @default(false)
+  placeholder   String?
+  helpText      String?
+  options       String?                 // JSON string for select/checkbox options
+  sortOrder     Int                     @default(0)
+  isActive      Boolean                 @default(true)
+  submissionData ContactSubmissionData[]
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  @@unique([contactFormId, fieldName])
+  @@map("contact_form_fields")
+}
+
+model ContactSubmission {
+  id            String                  @id @default(uuid())
+  contactFormId String
+  contactForm   ContactForm             @relation(fields: [contactFormId], references: [id], onDelete: Cascade)
+  siteId        String
+  site          Site                    @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  submitterIp   String?
+  submitterUserAgent String?
+  isRead        Boolean                 @default(false)
+  isArchived    Boolean                 @default(false)
+  submissionData ContactSubmissionData[]
+  submittedAt   DateTime                @default(now())
+
+  @@map("contact_submissions")
+}
+
+model ContactSubmissionData {
+  id                  String             @id @default(uuid())
+  contactSubmissionId String
+  contactSubmission   ContactSubmission  @relation(fields: [contactSubmissionId], references: [id], onDelete: Cascade)
+  contactFormFieldId  String
+  contactFormField    ContactFormField   @relation(fields: [contactFormFieldId], references: [id], onDelete: Cascade)
+  value               String?
+  createdAt           DateTime           @default(now())
+
+  @@unique([contactSubmissionId, contactFormFieldId])
+  @@map("contact_submission_data")
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -206,4 +274,16 @@ enum FeatureType {
   CUSTOM_FORMS
   MEMBER_AREA
   EVENT_MANAGEMENT
+}
+
+enum ContactFormFieldType {
+  TEXT
+  EMAIL
+  PHONE
+  TEXTAREA
+  SELECT
+  CHECKBOX
+  RADIO
+  NUMBER
+  URL
 }

@@ -75,7 +75,7 @@ const FEATURE_CONFIG = {
   CONTACT_MANAGEMENT: {
     name: 'Contact Management',
     icon: MessageSquare,
-    href: '/contacts',
+    href: '/contact',
     description: 'Manage contact forms'
   },
   SPONSORS: {
