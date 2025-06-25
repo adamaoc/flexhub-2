@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// CORS headers
+// CORS headers - comprehensive for production
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma',
+  'Access-Control-Allow-Credentials': 'false',
+  'Access-Control-Expose-Headers': 'Content-Length, X-JSON',
+  'Access-Control-Max-Age': '86400', // 24 hours
 };
 
 export async function POST(

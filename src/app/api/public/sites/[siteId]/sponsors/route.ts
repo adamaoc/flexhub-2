@@ -51,12 +51,8 @@ export async function GET(
       }
     });
 
-    // Add CORS headers for public access
+    // Add CORS headers for public access (also handled by Next.js config)
     const response = NextResponse.json(sponsors);
-    response.headers.set('Access-Control-Allow-Origin', '*');
-    response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    response.headers.set('Access-Control-Max-Age', '86400'); // 24 hours
     response.headers.set('Cache-Control', 'public, max-age=300'); // Cache for 5 minutes
 
     return response;
@@ -66,15 +62,9 @@ export async function GET(
   }
 }
 
-// Handle OPTIONS request for CORS preflight
+// Handle OPTIONS request for CORS preflight (also handled by Next.js config)
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
-      'Access-Control-Max-Age': '86400', // 24 hours
-    },
   });
 } 
