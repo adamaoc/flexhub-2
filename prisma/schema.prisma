@@ -95,10 +95,13 @@ model Invite {
 
 // Site Management
 model Site {
-  id        String   @id @default(uuid())
-  name      String
-  domain    String?
-  users     User[]   @relation("SiteUsers")
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  domain      String?
+  logo        String?  // URL to the site logo
+  coverImage  String?  // URL to the site cover image
+  users       User[]   @relation("SiteUsers")
   pages     Page[]
   blogPosts BlogPost[]
   mediaFiles MediaFile[]
@@ -159,14 +162,16 @@ model MediaFile {
 }
 
 model SiteFeature {
-  id        String      @id @default(uuid())
-  siteId    String
-  site      Site        @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  feature   FeatureType
-  isEnabled Boolean     @default(true)
-  config    Json?       // Flexible configuration for feature-specific settings
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id          String      @id @default(uuid())
+  siteId      String
+  site        Site        @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  feature     FeatureType
+  displayName String      // Human-readable name for the feature
+  description String?     // Optional description of the feature
+  isEnabled   Boolean     @default(true)
+  config      Json?       // Flexible configuration for feature-specific settings
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@unique([siteId, feature])
   @@map("site_features")
