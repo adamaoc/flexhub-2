@@ -99,7 +99,7 @@ export default function SponsorsPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentSite]);
+  }, [currentSite, featureDisplayName]);
 
   useEffect(() => {
     if (currentSite) {
