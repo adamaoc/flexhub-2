@@ -93,8 +93,8 @@ export async function POST(
     if (isProduction && hasSpacesConfig) {
       // Upload to DigitalOcean Spaces
       const extension = image.name.split(".").pop();
-      const filename = `${imageType}-${Date.now()}.${extension}`;
-      const spacesKey = generateSpacesKey(siteId, imageType, filename);
+      const originalFilename = `${Date.now()}.${extension}`;
+      const spacesKey = generateSpacesKey(siteId, imageType, originalFilename);
 
       imageUrl = await uploadToSpaces(buffer, spacesKey, image.type);
     } else {
