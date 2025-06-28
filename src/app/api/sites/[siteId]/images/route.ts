@@ -5,6 +5,13 @@ import { prisma } from "@/lib/prisma";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
+import {
+  uploadToSpaces,
+  deleteFromSpaces,
+  generateSpacesKey,
+  getSpacesKeyFromUrl,
+  isSpacesUrl,
+} from "@/lib/spaces";
 
 export async function POST(
   request: NextRequest,
@@ -70,25 +77,41 @@ export async function POST(
       );
     }
 
-    // Create directory structure: public/sites/[siteId]/
-    const siteDir = join(process.cwd(), "public", "sites", siteId);
-    if (!existsSync(siteDir)) {
-      await mkdir(siteDir, { recursive: true });
-    }
-
-    // Generate filename with timestamp to avoid caching issues
-    const timestamp = Date.now();
-    const extension = image.name.split(".").pop();
-    const filename = `${imageType}-${timestamp}.${extension}`;
-    const filepath = join(siteDir, filename);
-
-    // Convert file to buffer and save
+    // Convert file to buffer
     const bytes = await image.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await writeFile(filepath, buffer);
 
-    // Generate public URL
-    const imageUrl = `/sites/${siteId}/${filename}`;
+    let imageUrl: string;
+
+    // Check if we're in production and have Spaces configuration
+    const isProduction = process.env.NODE_ENV === "production";
+    const hasSpacesConfig =
+      process.env.DO_SPACES_ACCESS_KEY &&
+      process.env.DO_SPACES_BUCKET &&
+      process.env.DO_SPACES_ENDPOINT;
+
+    if (isProduction && hasSpacesConfig) {
+      // Upload to DigitalOcean Spaces
+      const extension = image.name.split(".").pop();
+      const filename = `${imageType}-${Date.now()}.${extension}`;
+      const spacesKey = generateSpacesKey(siteId, imageType, filename);
+
+      imageUrl = await uploadToSpaces(buffer, spacesKey, image.type);
+    } else {
+      // Local development - save to filesystem
+      const siteDir = join(process.cwd(), "public", "sites", siteId);
+      if (!existsSync(siteDir)) {
+        await mkdir(siteDir, { recursive: true });
+      }
+
+      const timestamp = Date.now();
+      const extension = image.name.split(".").pop();
+      const filename = `${imageType}-${timestamp}.${extension}`;
+      const filepath = join(siteDir, filename);
+
+      await writeFile(filepath, buffer);
+      imageUrl = `/sites/${siteId}/${filename}`;
+    }
 
     // Update site in database
     const updateData = {
@@ -178,19 +201,28 @@ export async function DELETE(
       data: updateData,
     });
 
-    // Remove file from filesystem if it exists
-    if (currentImageUrl && currentImageUrl.startsWith(`/sites/${siteId}/`)) {
+    // Remove file from storage if it exists
+    if (currentImageUrl) {
       try {
-        const filename = currentImageUrl.split("/").pop();
-        const filepath = join(
-          process.cwd(),
-          "public",
-          "sites",
-          siteId,
-          filename!
-        );
-        if (existsSync(filepath)) {
-          await unlink(filepath);
+        if (isSpacesUrl(currentImageUrl)) {
+          // Remove from DigitalOcean Spaces
+          const spacesKey = getSpacesKeyFromUrl(currentImageUrl);
+          if (spacesKey) {
+            await deleteFromSpaces(spacesKey);
+          }
+        } else if (currentImageUrl.startsWith(`/sites/${siteId}/`)) {
+          // Remove from local filesystem
+          const filename = currentImageUrl.split("/").pop();
+          const filepath = join(
+            process.cwd(),
+            "public",
+            "sites",
+            siteId,
+            filename!
+          );
+          if (existsSync(filepath)) {
+            await unlink(filepath);
+          }
         }
       } catch (fileError) {
         console.error("Error removing file:", fileError);
