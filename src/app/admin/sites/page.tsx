@@ -1,61 +1,39 @@
-'use client';
+"use client";
 
-import { useSession } from 'next-auth/react';
-import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Globe, Users, FileText, Image as ImageIcon, Calendar, Plus } from 'lucide-react';
-import { format } from 'date-fns';
-import { useRouter } from 'next/navigation';
-
-interface Site {
-  id: string;
-  name: string;
-  domain: string | null;
-  createdAt: string;
-  users: Array<{
-    id: string;
-    name: string | null;
-    email: string;
-    role: string;
-  }>;
-  pages: Array<{
-    id: string;
-    title: string;
-    slug: string;
-    isPublished: boolean;
-    createdAt: string;
-  }>;
-  blogPosts: Array<{
-    id: string;
-    title: string;
-    slug: string;
-    isPublished: boolean;
-    publishedAt: string | null;
-    createdAt: string;
-  }>;
-  mediaFiles: Array<{
-    id: string;
-    filename: string;
-    originalName: string;
-    mimeType: string;
-    size: number;
-    url: string;
-    createdAt: string;
-  }>;
-  _count: {
-    pages: number;
-    blogPosts: number;
-    mediaFiles: number;
-    users: number;
-  };
-}
+import { useSession } from "next-auth/react";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Globe,
+  Users,
+  FileText,
+  Image as ImageIcon,
+  Calendar,
+  Plus,
+} from "lucide-react";
+import { format } from "date-fns";
+import { useRouter } from "next/navigation";
+import type { Site } from "@/types/site";
 
 export default function SitesPage() {
   const { data: session } = useSession();
@@ -66,24 +44,25 @@ export default function SitesPage() {
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    domain: '',
+    name: "",
+    description: "",
+    domain: "",
   });
   const router = useRouter();
 
   const fetchSites = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/sites');
-      
+      const response = await fetch("/api/sites");
+
       if (!response.ok) {
-        throw new Error('Failed to fetch sites');
+        throw new Error("Failed to fetch sites");
       }
-      
+
       const data = await response.json();
       setSites(data.sites);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -94,14 +73,14 @@ export default function SitesPage() {
   }, []);
 
   const getPublishedCount = (items: Array<{ isPublished: boolean }>) => {
-    return items.filter(item => item.isPublished).length;
+    return items.filter((item) => item.isPublished).length;
   };
 
   const handleCreateSite = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name.trim()) {
-      setCreateError('Site name is required');
+      setCreateError("Site name is required");
       return;
     }
 
@@ -109,13 +88,14 @@ export default function SitesPage() {
       setCreateLoading(true);
       setCreateError(null);
 
-      const response = await fetch('/api/sites', {
-        method: 'POST',
+      const response = await fetch("/api/sites", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: formData.name.trim(),
+          description: formData.description.trim() || null,
           domain: formData.domain.trim() || null,
         }),
       });
@@ -123,36 +103,42 @@ export default function SitesPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create site');
+        throw new Error(data.error || "Failed to create site");
       }
 
       // Add the new site to the list
-      setSites(prevSites => [data.site, ...prevSites]);
-      
+      setSites((prevSites) => [data.site, ...prevSites]);
+
       // Reset form and close modal
-      setFormData({ name: '', domain: '' });
+      setFormData({ name: "", description: "", domain: "" });
       setCreateModalOpen(false);
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : 'An error occurred');
+      setCreateError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setCreateLoading(false);
     }
   };
 
-  const handleInputChange = (field: 'name' | 'domain', value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (
+    field: "name" | "description" | "domain",
+    value: string
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (createError) setCreateError(null);
   };
 
   // Check if user has access to sites (admin or super admin)
-  if (session?.user?.role !== 'ADMIN' && session?.user?.role !== 'SUPERADMIN') {
+  if (session?.user?.role !== "ADMIN" && session?.user?.role !== "SUPERADMIN") {
     return (
       <AuthenticatedLayout>
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Access Denied</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              Access Denied
+            </h1>
             <p className="text-muted-foreground mt-2">
-              You don&apos;t have permission to access this page. Admin privileges required.
+              You don&apos;t have permission to access this page. Admin
+              privileges required.
             </p>
           </div>
         </div>
@@ -172,7 +158,7 @@ export default function SitesPage() {
               </p>
             </div>
           </div>
-          
+
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, i) => (
               <Card key={i}>
@@ -201,7 +187,7 @@ export default function SitesPage() {
               </p>
             </div>
           </div>
-          
+
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
@@ -238,18 +224,40 @@ export default function SitesPage() {
                       <Input
                         id="name"
                         value={formData.name}
-                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("name", e.target.value)
+                        }
                         placeholder="Enter site name"
                         disabled={createLoading}
                         required
                       />
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="description">
+                        Description (Optional)
+                      </Label>
+                      <Textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) =>
+                          handleInputChange("description", e.target.value)
+                        }
+                        placeholder="Brief description of the site"
+                        disabled={createLoading}
+                        rows={3}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Describe the purpose or content of this site
+                      </p>
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="domain">Domain (Optional)</Label>
                       <Input
                         id="domain"
                         value={formData.domain}
-                        onChange={(e) => handleInputChange('domain', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("domain", e.target.value)
+                        }
                         placeholder="example.com"
                         disabled={createLoading}
                       />
@@ -272,7 +280,7 @@ export default function SitesPage() {
                         Cancel
                       </Button>
                       <Button type="submit" disabled={createLoading}>
-                        {createLoading ? 'Creating...' : 'Create Site'}
+                        {createLoading ? "Creating..." : "Create Site"}
                       </Button>
                     </div>
                   </form>
@@ -316,13 +324,14 @@ export default function SitesPage() {
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <Badge variant="secondary">
-                        {site._count.users} user{site._count.users !== 1 ? 's' : ''}
+                        {site._count.users} user
+                        {site._count.users !== 1 ? "s" : ""}
                       </Badge>
                       <Button
                         size="sm"
                         variant="link"
                         className="p-0 h-auto text-xs text-primary underline opacity-80 group-hover:opacity-100"
-                        onClick={e => {
+                        onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/admin/sites/${site.id}`);
                         }}
@@ -336,7 +345,9 @@ export default function SitesPage() {
                       <div className="text-center">
                         <div className="flex items-center justify-center gap-1 mb-1">
                           <FileText className="h-3 w-3" />
-                          <span className="font-medium">{site._count.pages}</span>
+                          <span className="font-medium">
+                            {site._count.pages}
+                          </span>
                         </div>
                         <span className="text-muted-foreground">Pages</span>
                         {site._count.pages > 0 && (
@@ -348,7 +359,9 @@ export default function SitesPage() {
                       <div className="text-center">
                         <div className="flex items-center justify-center gap-1 mb-1">
                           <FileText className="h-3 w-3" />
-                          <span className="font-medium">{site._count.blogPosts}</span>
+                          <span className="font-medium">
+                            {site._count.blogPosts}
+                          </span>
                         </div>
                         <span className="text-muted-foreground">Posts</span>
                         {site._count.blogPosts > 0 && (
@@ -360,7 +373,9 @@ export default function SitesPage() {
                       <div className="text-center">
                         <div className="flex items-center justify-center gap-1 mb-1">
                           <ImageIcon className="h-3 w-3" />
-                          <span className="font-medium">{site._count.mediaFiles}</span>
+                          <span className="font-medium">
+                            {site._count.mediaFiles}
+                          </span>
                         </div>
                         <span className="text-muted-foreground">Media</span>
                       </div>
@@ -374,8 +389,13 @@ export default function SitesPage() {
                         </div>
                         <div className="space-y-1">
                           {site.users.slice(0, 3).map((user) => (
-                            <div key={user.id} className="flex items-center justify-between text-xs">
-                              <span className="truncate">{user.name || user.email}</span>
+                            <div
+                              key={user.id}
+                              className="flex items-center justify-between text-xs"
+                            >
+                              <span className="truncate">
+                                {user.name || user.email}
+                              </span>
                               <Badge variant="outline" className="text-xs">
                                 {user.role}
                               </Badge>
@@ -392,7 +412,7 @@ export default function SitesPage() {
 
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
-                      Created {format(new Date(site.createdAt), 'MMM d, yyyy')}
+                      Created {format(new Date(site.createdAt), "MMM d, yyyy")}
                     </div>
                   </CardContent>
                 </Card>
@@ -403,4 +423,4 @@ export default function SitesPage() {
       )}
     </AuthenticatedLayout>
   );
-} 
+}

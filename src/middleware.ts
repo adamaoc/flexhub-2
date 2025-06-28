@@ -1,25 +1,28 @@
-import { withAuth } from "next-auth/middleware"
-import { NextResponse } from "next/server"
+import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
 export default withAuth(
   function middleware(req) {
     // Check if user session is expired
     if (req.nextauth.token?.isExpired) {
-      console.log('🕐 Session expired, redirecting to sign-in')
+      console.log("🕐 Session expired, redirecting to sign-in");
       // Redirect to sign-in page with callbackUrl
       return NextResponse.redirect(
-        new URL(`/auth/signin?callbackUrl=${encodeURIComponent(req.url)}`, req.url)
-      )
+        new URL(
+          `/auth/signin?callbackUrl=${encodeURIComponent(req.url)}`,
+          req.url
+        )
+      );
     }
-    
-    return NextResponse.next()
+
+    return NextResponse.next();
   },
   {
     callbacks: {
       authorized: ({ token }) => !!token && !token.isExpired,
     },
   }
-)
+);
 
 export const config = {
   matcher: [
@@ -34,6 +37,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - site.webmanifest (PWA manifest)
      */
-    '/((?!api/auth|api/health|api/public|auth|_next/static|_next/image|favicon.ico|site.webmanifest).*)',
+    "/((?!api/auth|api/health|api/public|auth|_next/static|_next/image|favicon.ico|site.webmanifest).*)",
   ],
-} 
+};

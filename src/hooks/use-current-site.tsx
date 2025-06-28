@@ -1,11 +1,20 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
+import { useSession } from "next-auth/react";
 
 interface SiteFeature {
   id: string;
   feature: string;
+  displayName: string;
+  description: string | null;
   isEnabled: boolean;
   config: Record<string, unknown>;
   createdAt: string;
@@ -65,7 +74,9 @@ interface CurrentSiteContextType {
   setCurrentSite: (site: Site | null) => void;
 }
 
-const CurrentSiteContext = createContext<CurrentSiteContextType | undefined>(undefined);
+const CurrentSiteContext = createContext<CurrentSiteContextType | undefined>(
+  undefined
+);
 
 export function CurrentSiteProvider({ children }: { children: ReactNode }) {
   const { data: session } = useSession();
@@ -84,47 +95,51 @@ export function CurrentSiteProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await fetch('/api/sites');
-      
+
+      const response = await fetch("/api/sites");
+
       if (!response.ok) {
-        throw new Error('Failed to fetch sites');
+        throw new Error("Failed to fetch sites");
       }
-      
+
       const data = await response.json();
       setSites(data.sites || []);
-      
+
       if (data.sites && data.sites.length > 0) {
         // Get the stored site ID from localStorage (only after mounted)
-        const storedSiteId = mounted ? localStorage.getItem('selectedSiteId') : null;
-        
+        const storedSiteId = mounted
+          ? localStorage.getItem("selectedSiteId")
+          : null;
+
         // Try to find the stored site, fallback to first site if not found
         let selectedSite = data.sites[0];
         if (storedSiteId) {
-          const storedSite = data.sites.find((site: Site) => site.id === storedSiteId);
+          const storedSite = data.sites.find(
+            (site: Site) => site.id === storedSiteId
+          );
           if (storedSite) {
             selectedSite = storedSite;
           }
         }
-        
+
         setCurrentSite(selectedSite);
-        
+
         // Always store the selected site ID to ensure persistence (only after mounted)
         if (mounted) {
-          localStorage.setItem('selectedSiteId', selectedSite.id);
+          localStorage.setItem("selectedSiteId", selectedSite.id);
         }
       } else {
         setCurrentSite(null);
         if (mounted) {
-          localStorage.removeItem('selectedSiteId');
+          localStorage.removeItem("selectedSiteId");
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
       setCurrentSite(null);
       setSites([]);
       if (mounted) {
-        localStorage.removeItem('selectedSiteId');
+        localStorage.removeItem("selectedSiteId");
       }
     } finally {
       setLoading(false);
@@ -136,16 +151,19 @@ export function CurrentSiteProvider({ children }: { children: ReactNode }) {
   }, [fetchCurrentSite]);
 
   // Custom setCurrentSite function that also persists to localStorage
-  const setCurrentSitePersistent = useCallback((site: Site | null) => {
-    setCurrentSite(site);
-    if (mounted) {
-      if (site) {
-        localStorage.setItem('selectedSiteId', site.id);
-      } else {
-        localStorage.removeItem('selectedSiteId');
+  const setCurrentSitePersistent = useCallback(
+    (site: Site | null) => {
+      setCurrentSite(site);
+      if (mounted) {
+        if (site) {
+          localStorage.setItem("selectedSiteId", site.id);
+        } else {
+          localStorage.removeItem("selectedSiteId");
+        }
       }
-    }
-  }, [mounted]);
+    },
+    [mounted]
+  );
 
   useEffect(() => {
     if (session?.user) {
@@ -155,7 +173,7 @@ export function CurrentSiteProvider({ children }: { children: ReactNode }) {
       setCurrentSite(null);
       setLoading(false);
       if (mounted) {
-        localStorage.removeItem('selectedSiteId');
+        localStorage.removeItem("selectedSiteId");
       }
     } else {
       // Session is undefined (still loading), don't clear localStorage yet
@@ -182,7 +200,7 @@ export function CurrentSiteProvider({ children }: { children: ReactNode }) {
 export function useCurrentSite() {
   const context = useContext(CurrentSiteContext);
   if (context === undefined) {
-    throw new Error('useCurrentSite must be used within a CurrentSiteProvider');
+    throw new Error("useCurrentSite must be used within a CurrentSiteProvider");
   }
   return context;
-} 
+}
