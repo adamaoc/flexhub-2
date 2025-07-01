@@ -19,6 +19,19 @@ type SiteImageManagementProps = {
   onSiteUpdate: () => Promise<void>;
 };
 
+// Utility function to convert full localhost URLs to relative paths for Next.js Image component
+const getImageSrc = (imageUrl: string | null): string | null => {
+  if (!imageUrl) return null;
+
+  // If it's a localhost URL in development, convert to relative path
+  if (imageUrl.startsWith("http://localhost:3005/")) {
+    return imageUrl.replace("http://localhost:3005", "");
+  }
+
+  // For production URLs (Spaces) or already relative paths, return as-is
+  return imageUrl;
+};
+
 export function SiteImageManagement({
   site,
   onSiteUpdate,
@@ -152,10 +165,10 @@ export function SiteImageManagement({
                     className="object-contain rounded-lg"
                   />
                 </div>
-              ) : site.logo ? (
+              ) : site.logo && getImageSrc(site.logo) ? (
                 <div className="relative w-full h-full">
                   <Image
-                    src={site.logo}
+                    src={getImageSrc(site.logo)!}
                     alt="Site logo"
                     fill
                     className="object-contain rounded-lg"
@@ -213,10 +226,10 @@ export function SiteImageManagement({
                     className="object-cover rounded-lg"
                   />
                 </div>
-              ) : site.coverImage ? (
+              ) : site.coverImage && getImageSrc(site.coverImage) ? (
                 <div className="relative w-full h-full">
                   <Image
-                    src={site.coverImage}
+                    src={getImageSrc(site.coverImage)!}
                     alt="Site cover"
                     fill
                     className="object-cover rounded-lg"

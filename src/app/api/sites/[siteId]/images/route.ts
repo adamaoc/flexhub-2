@@ -110,7 +110,8 @@ export async function POST(
       const filepath = join(siteDir, filename);
 
       await writeFile(filepath, buffer);
-      imageUrl = `/sites/${siteId}/${filename}`;
+      // In development, save the full URL path with host
+      imageUrl = `http://localhost:3005/sites/${siteId}/${filename}`;
     }
 
     // Update site in database
@@ -210,7 +211,10 @@ export async function DELETE(
           if (spacesKey) {
             await deleteFromSpaces(spacesKey);
           }
-        } else if (currentImageUrl.startsWith(`/sites/${siteId}/`)) {
+        } else if (
+          currentImageUrl.startsWith(`/sites/${siteId}/`) ||
+          currentImageUrl.startsWith(`http://localhost:3005/sites/${siteId}/`)
+        ) {
           // Remove from local filesystem
           const filename = currentImageUrl.split("/").pop();
           const filepath = join(
