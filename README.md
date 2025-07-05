@@ -21,7 +21,7 @@ A secure, invite-based content management system built with Next.js, NextAuth.js
 
 ## 📋 Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - PostgreSQL database
 - GitHub OAuth App (optional)
 - Google OAuth App (optional)
@@ -46,7 +46,7 @@ DATABASE_URL="postgresql://username:password@localhost:5432/flexhub?schema=publi
 
 # NextAuth.js
 NEXTAUTH_SECRET="your-secret-key-here"
-NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_URL="http://localhost:3005"
 
 # GitHub OAuth (Optional)
 GITHUB_ID="your-github-client-id"
@@ -89,7 +89,7 @@ npm run create-invite superadmin@example.com SUPERADMIN
 npm run dev
 ```
 
-Visit `http://localhost:3000` and sign in with an invited email address.
+Visit `http://localhost:3005` and sign in with an invited email address.
 
 ## 🔐 Authentication Flow
 
@@ -130,16 +130,19 @@ GET /api/public/sites/{siteId}/sponsors
 **Description**: Returns all active sponsors for a specific site.
 
 **Parameters**:
+
 - `siteId` - The unique identifier of the site
 
 **Response**: JSON array of sponsor objects
 
 **Example Request**:
+
 ```bash
 curl https://yourdomain.com/api/public/sites/your-site-id/sponsors
 ```
 
 **Example Response**:
+
 ```json
 [
   {
@@ -158,6 +161,7 @@ curl https://yourdomain.com/api/public/sites/your-site-id/sponsors
 ```
 
 **Features**:
+
 - ✅ No authentication required
 - ✅ CORS enabled for cross-origin requests
 - ✅ Returns only active sponsors
@@ -165,6 +169,7 @@ curl https://yourdomain.com/api/public/sites/your-site-id/sponsors
 - ✅ Validates sponsor feature is enabled for the site
 
 **Error Responses**:
+
 - `404` - Site not found
 - `403` - Sponsors feature not enabled for this site
 - `500` - Internal server error
@@ -211,26 +216,31 @@ flex-hub/
 ## 🔧 OAuth Provider Setup
 
 ### GitHub OAuth
+
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
 2. Create a new OAuth App
-3. Set homepage URL to `http://localhost:3000`
-4. Set callback URL to `http://localhost:3000/api/auth/callback/github`
+3. Set homepage URL to `http://localhost:3005`
+4. Set callback URL to `http://localhost:3005/api/auth/callback/github`
 
 ### Google OAuth
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create OAuth 2.0 credentials
-3. Add `http://localhost:3000/api/auth/callback/google` to redirect URIs
+3. Add `http://localhost:3005/api/auth/callback/google` to redirect URIs
 
 ## 🚨 Troubleshooting
 
 ### Common Issues
+
 - **"Access denied"** - User doesn't have a valid invite
 - **OAuth errors** - Check provider configuration
 - **Database errors** - Ensure Prisma client is generated
 - **Session issues** - Verify `NEXTAUTH_SECRET` is set
 
 ### Debug Mode
+
 Enable NextAuth.js debug mode in `.env.local`:
+
 ```env
 NEXTAUTH_DEBUG=true
 ```
@@ -241,7 +251,6 @@ NEXTAUTH_DEBUG=true
 - [Prisma Documentation](https://www.prisma.io/docs/)
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Detailed Setup Guide](./NEXTAUTH_SETUP.md)
-
 
 ## Prisma after deploy
 
@@ -259,5 +268,5 @@ https://www.youtube.com/watch?v=_ER9jHiylAo
 Auth video
 https://www.youtube.com/watch?v=n-fVrzaikBQ
 
-Google Signin managed through txg gcc - 
+Google Signin managed through txg gcc -
 https://console.cloud.google.com/auth/clients?inv=1&invt=Ab0rRw&project=flexhub-ampnetmedia&supportedpurview=project

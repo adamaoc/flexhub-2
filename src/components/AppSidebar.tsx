@@ -111,7 +111,7 @@ const FEATURE_CONFIG = {
   SOCIAL_MEDIA_INTEGRATION: {
     name: "Social Media",
     icon: Share2,
-    href: "/social",
+    href: "/social-media",
     description: "Social media integration",
   },
   MULTI_LANGUAGE: {
