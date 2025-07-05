@@ -109,6 +109,7 @@ model Site {
   sponsors  Sponsor[]
   contactForm ContactForm?
   contactSubmissions ContactSubmission[]
+  socialMediaChannels SocialMediaChannel[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -257,6 +258,43 @@ model ContactSubmissionData {
   @@map("contact_submission_data")
 }
 
+// Social Media Integration
+model SocialMediaChannel {
+  id            String                    @id @default(uuid())
+  siteId        String
+  site          Site                      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  platform      SocialMediaPlatform
+  channelId     String                    // Platform-specific channel ID (YouTube channel ID, Twitch username, etc.)
+  channelName   String?                   // Display name for the channel
+  channelUrl    String?                   // Full URL to the channel
+  isActive      Boolean                   @default(true)
+  displayOrder  Int                       @default(0)
+  config        Json?                     // Platform-specific configuration
+  stats         SocialMediaChannelStat[]
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  @@unique([siteId, platform, channelId])
+  @@map("social_media_channels")
+}
+
+model SocialMediaChannelStat {
+  id                    String              @id @default(uuid())
+  socialMediaChannelId  String
+  socialMediaChannel    SocialMediaChannel  @relation(fields: [socialMediaChannelId], references: [id], onDelete: Cascade)
+  statType              SocialMediaStatType
+  displayName           String              // Human-readable name for the stat
+  isEnabled             Boolean             @default(true)
+  displayOrder          Int                 @default(0)
+  value                 String?             // Latest cached value
+  lastUpdated           DateTime?           // When this stat was last fetched
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@unique([socialMediaChannelId, statType])
+  @@map("social_media_channel_stats")
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -291,4 +329,36 @@ enum ContactFormFieldType {
   RADIO
   NUMBER
   URL
+}
+
+enum SocialMediaPlatform {
+  YOUTUBE
+  TWITCH
+  INSTAGRAM
+  TWITTER
+  TIKTOK
+  FACEBOOK
+}
+
+enum SocialMediaStatType {
+  // YouTube Stats
+  YOUTUBE_SUBSCRIBERS
+  YOUTUBE_TOTAL_VIEWS
+  YOUTUBE_VIDEO_COUNT
+  YOUTUBE_THUMBNAIL
+  YOUTUBE_DESCRIPTION
+  YOUTUBE_AVERAGE_VIEWS
+  YOUTUBE_RECENT_VIDEOS
+
+  // Twitch Stats  
+  TWITCH_FOLLOWERS
+  TWITCH_TOTAL_VIEWS
+  TWITCH_RECENT_STREAMS
+  TWITCH_AVERAGE_VIEWERS
+  TWITCH_SUBSCRIBER_COUNT
+
+  // Common Stats
+  PLATFORM_URL
+  CHANNEL_NAME
+  LAST_UPDATED
 }
