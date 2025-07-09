@@ -155,6 +155,8 @@ model MediaFile {
   mimeType  String
   size      Int
   url       String
+  folderPath String? // Nested folder path (e.g., "images/gallery", "documents/pdfs")
+  description String? // Optional description for the file
   siteId    String
   site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -295,6 +297,37 @@ model SocialMediaChannelStat {
   @@map("social_media_channel_stats")
 }
 
+// Schedule Clean Dallas Application Tables
+// These tables are from another application sharing the same database
+model ScdQuoteRequest {
+  id                   String                 @id // Custom ID generation
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  fullName             String
+  email                String
+  phone                String?
+  address              String?
+  cleaningType         ScdCleaningType
+  scheduledDate        DateTime?
+  squareFootage        Int?
+  rooms                Int?
+  bathrooms            Int?
+  notes                String?
+  status               ScdQuoteRequestStatus  @default(PENDING)
+  contacted            Boolean                @default(false)
+  completed            Boolean                @default(false)
+  confirmationNumber   String?                @unique
+  quoteSent            Boolean                @default(false)
+  quoteAmount          Float?
+  quoteSentAt          DateTime?
+
+  @@map("scd_quote_requests")
+  @@index([status])
+  @@index([createdAt])
+  @@index([email])
+  @@index([confirmationNumber])
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -361,4 +394,21 @@ enum SocialMediaStatType {
   PLATFORM_URL
   CHANNEL_NAME
   LAST_UPDATED
+}
+
+// Schedule Clean Dallas Enums
+enum ScdCleaningType {
+  AIRBNB
+  AFTER_PARTY
+  OFFICE
+  REALTOR
+  OTHER
+}
+
+enum ScdQuoteRequestStatus {
+  PENDING
+  CONTACTED
+  SCHEDULED
+  COMPLETED
+  CANCELED
 }
