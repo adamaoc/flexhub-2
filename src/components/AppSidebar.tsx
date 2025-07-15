@@ -369,6 +369,24 @@ export function AppSidebar() {
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip="Contact Messages"
+                      isActive={pathname === "/admin/messages"}
+                    >
+                      <Link
+                        href="/admin/messages"
+                        onClick={handleMobileNavigation}
+                      >
+                        <MessageSquare />
+                        <span>Messages</span>
+                        {pathname === "/admin/messages" && (
+                          <ChevronRight className="ml-auto" />
+                        )}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

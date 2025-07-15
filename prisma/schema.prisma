@@ -328,6 +328,31 @@ model ScdQuoteRequest {
   @@index([confirmationNumber])
 }
 
+// Devision Media Featured Work
+model DevisionMediaFeaturedWork {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  category    String   // e.g., "Wedding", "Corporate", "Event", "Portrait"
+  thumbnail   String?  // URL to the thumbnail image
+  isVideo     Boolean  @default(false)
+  images      String[] // Array of image URLs
+  videoUrl    String?  // External video URL (YouTube, Vimeo, etc.)
+  clientName  String?  // Client name for the project
+  projectDate DateTime? // When the project was completed
+  tags        String[] // Array of tags for categorization
+  isFeatured  Boolean  @default(false) // Whether this work is prominently featured
+  sortOrder   Int      @default(0) // For controlling display order
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("devision_media_featured_work")
+  @@index([category])
+  @@index([isFeatured])
+  @@index([projectDate])
+  @@index([sortOrder])
+}
+
 enum UserRole {
   USER
   ADMIN
