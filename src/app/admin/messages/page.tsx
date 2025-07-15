@@ -106,6 +106,7 @@ export default function AdminMessagesPage() {
     siteId: "all",
     isRead: "all",
   });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedSubmission, setSelectedSubmission] =
     useState<ContactSubmission | null>(null);
 

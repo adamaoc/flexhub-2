@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const isRead = searchParams.get("isRead");
 
     // Build the where clause for sites with contact management feature
-    const siteWhere: any = {
+    const siteWhere = {
       features: {
         some: {
           feature: "CONTACT_MANAGEMENT" as const,
@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build the where clause for submissions
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const submissionWhere: any = {
       site: siteWhere,
     };
