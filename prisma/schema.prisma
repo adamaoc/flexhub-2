@@ -328,6 +328,8 @@ model ScdQuoteRequest {
   @@index([confirmationNumber])
 }
 
+// Devision Booking System
+
 // Devision Media Featured Work
 model DevisionMediaFeaturedWork {
   id          Int      @id @default(autoincrement())
@@ -351,6 +353,41 @@ model DevisionMediaFeaturedWork {
   @@index([isFeatured])
   @@index([projectDate])
   @@index([sortOrder])
+}
+
+// Devision Media Booking System
+model DevisionMediaBooking {
+  id                String         @id @default(cuid())
+  fullName          String
+  email             String
+  phone             String?
+  eventDate         DateTime
+  eventType         DevisionEventType
+  location          String?
+  description       String
+  howDidYouHear     DevisionReferralSource?
+  preferredContact  DevisionContactMethod
+  status            DevisionBookingStatus @default(PENDING)
+  contacted         Boolean        @default(false)
+  completed         Boolean        @default(false)
+  confirmationNumber String?       @unique
+  notes             String?        // Admin notes for internal use
+  quoteAmount       Float?         // If a quote is provided
+  quoteSent         Boolean        @default(false)
+  quoteSentAt       DateTime?
+  depositPaid       Boolean        @default(false)
+  depositAmount     Float?
+  finalPaymentPaid  Boolean        @default(false)
+  finalPaymentAmount Float?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@map("devision_media_bookings")
+  @@index([status])
+  @@index([eventDate])
+  @@index([email])
+  @@index([confirmationNumber])
+  @@index([createdAt])
 }
 
 enum UserRole {
@@ -436,4 +473,55 @@ enum ScdQuoteRequestStatus {
   SCHEDULED
   COMPLETED
   CANCELED
+}
+
+// Devision Media Booking Enums
+enum DevisionEventType {
+  WEDDING
+  CORPORATE_EVENT
+  PORTRAIT_SESSION
+  FAMILY_SESSION
+  ENGAGEMENT
+  BIRTHDAY
+  ANNIVERSARY
+  GRADUATION
+  REAL_ESTATE
+  PRODUCT_PHOTOGRAPHY
+  EVENT_PHOTOGRAPHY
+  VIDEO_PRODUCTION
+  OTHER
+}
+
+enum DevisionReferralSource {
+  GOOGLE_SEARCH
+  SOCIAL_MEDIA
+  FRIEND_RECOMMENDATION
+  PREVIOUS_CLIENT
+  WEDDING_VENDOR
+  BUSINESS_REFERRAL
+  YELP_REVIEW
+  FACEBOOK_ADS
+  INSTAGRAM_ADS
+  OTHER
+}
+
+enum DevisionContactMethod {
+  EMAIL
+  PHONE
+  TEXT
+  WHATSAPP
+  FACEBOOK_MESSENGER
+  INSTAGRAM_DM
+}
+
+enum DevisionBookingStatus {
+  PENDING
+  CONTACTED
+  CONFIRMED
+  DEPOSIT_PAID
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
 }
