@@ -525,3 +525,234 @@ enum DevisionBookingStatus {
   CANCELLED
   NO_SHOW
 }
+
+// Local and Untold Platform Tables
+// All tables are prefixed with "local_and_untold_" to keep them separate
+
+model LocalAndUntoldBusiness {
+  id              String   @id @default(uuid())
+  name            String   @db.VarChar(255)
+  slug            String   @unique @db.VarChar(255)
+  ownerName       String   @db.VarChar(255)
+  location        String   @db.VarChar(255)
+  industry        String   @db.VarChar(100)
+  description     String?  @db.Text
+  notes           String?  @db.Text // Internal notes about the business
+  websiteUrl      String?  @db.VarChar(500)
+  phone           String?  @db.VarChar(20)
+  email           String?  @db.VarChar(255)
+  address         String?  @db.Text
+  coordinates     String?  // For map integration (stored as string, can be parsed as POINT)
+  status          LocalAndUntoldBusinessStatus @default(ACTIVE)
+  featuredImageUrl String? @db.VarChar(500)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  stories LocalAndUntoldStory[]
+  calendarEvents LocalAndUntoldCalendarEvent[]
+
+  @@map("local_and_untold_businesses")
+  @@index([status])
+  @@index([industry])
+  @@index([location])
+  @@index([slug])
+}
+
+model LocalAndUntoldStory {
+  id                String   @id @default(uuid())
+  title             String   @db.VarChar(255)
+  slug              String   @unique @db.VarChar(255)
+  excerpt           String   @db.Text
+  content           String   @db.Text
+  businessId        String?
+  business          LocalAndUntoldBusiness? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  status            LocalAndUntoldStoryStatus @default(DRAFT)
+  featuredImageUrl  String?  @db.VarChar(500)
+  youtubeVideoId    String?  @db.VarChar(20)
+  publishedAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tags              LocalAndUntoldStoryTag[]
+  mediaFiles        LocalAndUntoldMediaFile[]
+  pageViews         LocalAndUntoldPageView[]
+  calendarEvents    LocalAndUntoldCalendarEvent[]
+
+  @@map("local_and_untold_stories")
+  @@index([status])
+  @@index([publishedAt])
+  @@index([businessId])
+  @@index([slug])
+}
+
+model LocalAndUntoldTag {
+  id          String   @id @default(uuid())
+  name        String   @unique @db.VarChar(50)
+  slug        String   @unique @db.VarChar(50)
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  stories     LocalAndUntoldStoryTag[]
+
+  @@map("local_and_untold_tags")
+  @@index([slug])
+}
+
+model LocalAndUntoldStoryTag {
+  storyId String
+  tagId   String
+  story   LocalAndUntoldStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  tag     LocalAndUntoldTag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, tagId])
+  @@map("local_and_untold_story_tags")
+}
+
+model LocalAndUntoldMediaFile {
+  id                String   @id @default(uuid())
+  filename          String   @db.VarChar(255)
+  originalFilename  String   @db.VarChar(255)
+  filePath          String   @db.VarChar(500)
+  fileSize          BigInt
+  mimeType          String   @db.VarChar(100)
+  fileType          LocalAndUntoldMediaFileType
+  width             Int?     // For images/videos
+  height            Int?     // For images/videos
+  duration          Int?     // For videos/audio (in seconds)
+  altText           String?  @db.VarChar(255)
+  caption           String?  @db.Text
+  usedInStoryId     String?
+  usedInStory       LocalAndUntoldStory? @relation(fields: [usedInStoryId], references: [id], onDelete: SetNull)
+  createdAt         DateTime @default(now())
+
+  @@map("local_and_untold_media_files")
+  @@index([fileType])
+  @@index([usedInStoryId])
+}
+
+model LocalAndUntoldAnalytics {
+  id          String   @id @default(uuid())
+  pageUrl     String   @db.VarChar(500)
+  pageTitle   String?  @db.VarChar(255)
+  visitorIp   String?  @db.VarChar(45) // IPv6 compatible
+  userAgent   String?  @db.Text
+  referrer    String?  @db.VarChar(500)
+  sessionId   String?  @db.VarChar(255)
+  pageViews   Int      @default(1)
+  timeOnPage  Int?     // in seconds
+  bounce      Boolean  @default(false)
+  deviceType  LocalAndUntoldDeviceType?
+  browser     String?  @db.VarChar(50)
+  os          String?  @db.VarChar(50)
+  country     String?  @db.VarChar(2)
+  city        String?  @db.VarChar(100)
+  createdAt   DateTime @default(now())
+
+  @@map("local_and_untold_analytics")
+  @@index([createdAt])
+  @@index([pageUrl])
+  @@index([sessionId])
+}
+
+model LocalAndUntoldPageView {
+  id          String   @id @default(uuid())
+  storyId     String?
+  story       LocalAndUntoldStory? @relation(fields: [storyId], references: [id], onDelete: SetNull)
+  pageUrl     String   @db.VarChar(500)
+  visitorIp   String?  @db.VarChar(45)
+  sessionId   String?  @db.VarChar(255)
+  userAgent   String?  @db.Text
+  referrer    String?  @db.VarChar(500)
+  timeSpent   Int?     // in seconds
+  createdAt   DateTime @default(now())
+
+  @@map("local_and_untold_page_views")
+  @@index([storyId])
+  @@index([createdAt])
+}
+
+model LocalAndUntoldCalendarEvent {
+  id          String   @id @default(uuid())
+  title       String   @db.VarChar(255)
+  description String?  @db.Text
+  eventType   LocalAndUntoldEventType
+  startDate   DateTime
+  endDate     DateTime?
+  allDay      Boolean  @default(false)
+  location    String?  @db.VarChar(255)
+  attendees   String[] // Array of attendee names/emails
+  storyId     String?
+  story       LocalAndUntoldStory? @relation(fields: [storyId], references: [id], onDelete: SetNull)
+  businessId  String?
+  business    LocalAndUntoldBusiness? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  status      LocalAndUntoldEventStatus @default(SCHEDULED)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("local_and_untold_calendar_events")
+  @@index([startDate])
+  @@index([eventType])
+  @@index([status])
+}
+
+model LocalAndUntoldSiteSetting {
+  id          String   @id @default(uuid())
+  settingKey  String   @unique @db.VarChar(100)
+  settingValue String? @db.Text
+  settingType LocalAndUntoldSettingType @default(STRING)
+  description String?  @db.Text
+  isPublic    Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  @@map("local_and_untold_site_settings")
+}
+
+// Local and Untold Enums
+enum LocalAndUntoldBusinessStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+enum LocalAndUntoldStoryStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LocalAndUntoldMediaFileType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  AUDIO
+}
+
+enum LocalAndUntoldDeviceType {
+  DESKTOP
+  MOBILE
+  TABLET
+}
+
+enum LocalAndUntoldEventType {
+  PUBLICATION
+  INTERVIEW
+  REVIEW
+  MEDIA
+  MAINTENANCE
+  REPORT
+}
+
+enum LocalAndUntoldEventStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum LocalAndUntoldSettingType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+}

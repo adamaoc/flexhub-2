@@ -387,6 +387,24 @@ export function AppSidebar() {
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip="Schedules & Bookings"
+                      isActive={pathname === "/admin/schedules"}
+                    >
+                      <Link
+                        href="/admin/schedules"
+                        onClick={handleMobileNavigation}
+                      >
+                        <Calendar />
+                        <span>Schedules & Bookings</span>
+                        {pathname === "/admin/schedules" && (
+                          <ChevronRight className="ml-auto" />
+                        )}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

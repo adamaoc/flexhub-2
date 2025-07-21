@@ -34,7 +34,6 @@ import {
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import type { Site } from "@/types/site";
-import ScdQuoteRequestsDashboard from "@/components/ScdQuoteRequestsDashboard";
 
 export default function SitesPage() {
   const { data: session } = useSession();
@@ -420,7 +419,6 @@ export default function SitesPage() {
               ))}
             </div>
           )}
-          <ScdQuoteRequestsDashboard />
         </div>
       )}
     </AuthenticatedLayout>
