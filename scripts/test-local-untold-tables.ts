@@ -69,7 +69,7 @@ async function testLocalAndUntoldTables() {
         filename: "coffee-shop-interior.jpg",
         originalFilename: "interior.jpg",
         filePath: "/uploads/coffee-shop-interior.jpg",
-        fileSize: 1024000n, // 1MB
+        fileSize: 1024000, // 1MB
         mimeType: "image/jpeg",
         fileType: "IMAGE",
         width: 1920,
