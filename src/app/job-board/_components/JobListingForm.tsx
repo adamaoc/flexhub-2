@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { WysiwygEditor } from "@/components/ui/wysiwyg-editor";
 import {
   Select,
   SelectContent,
@@ -52,14 +52,7 @@ export function JobListingForm({ mode, jobListingId }: JobListingFormProps) {
     expiresAt: "",
   });
 
-  useEffect(() => {
-    fetchCompanies();
-    if (mode === "edit" && jobListingId) {
-      fetchJobListing();
-    }
-  }, [mode, jobListingId]);
-
-  const fetchCompanies = async () => {
+  const fetchCompanies = useCallback(async () => {
     try {
       const response = await fetch(`/api/sites/${currentSite?.id}/companies`);
       if (response.ok) {
@@ -69,9 +62,9 @@ export function JobListingForm({ mode, jobListingId }: JobListingFormProps) {
     } catch (error) {
       console.error("Error fetching companies:", error);
     }
-  };
+  }, [currentSite?.id]);
 
-  const fetchJobListing = async () => {
+  const fetchJobListing = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -102,7 +95,14 @@ export function JobListingForm({ mode, jobListingId }: JobListingFormProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentSite?.id, jobListingId]);
+
+  useEffect(() => {
+    fetchCompanies();
+    if (mode === "edit" && jobListingId) {
+      fetchJobListing();
+    }
+  }, [mode, jobListingId, fetchCompanies, fetchJobListing]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,15 +182,13 @@ export function JobListingForm({ mode, jobListingId }: JobListingFormProps) {
               </div>
               <div>
                 <Label htmlFor="description">Job Description *</Label>
-                <Textarea
-                  id="description"
+                <WysiwygEditor
                   value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
+                  onChange={(value) =>
+                    setFormData({ ...formData, description: value })
                   }
                   placeholder="Enter detailed job description"
                   rows={6}
-                  required
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -379,11 +377,10 @@ export function JobListingForm({ mode, jobListingId }: JobListingFormProps) {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="requirements">Requirements</Label>
-                <Textarea
-                  id="requirements"
+                <WysiwygEditor
                   value={formData.requirements}
-                  onChange={(e) =>
-                    setFormData({ ...formData, requirements: e.target.value })
+                  onChange={(value) =>
+                    setFormData({ ...formData, requirements: value })
                   }
                   placeholder="Enter job requirements"
                   rows={4}
@@ -391,11 +388,10 @@ export function JobListingForm({ mode, jobListingId }: JobListingFormProps) {
               </div>
               <div>
                 <Label htmlFor="benefits">Benefits</Label>
-                <Textarea
-                  id="benefits"
+                <WysiwygEditor
                   value={formData.benefits}
-                  onChange={(e) =>
-                    setFormData({ ...formData, benefits: e.target.value })
+                  onChange={(value) =>
+                    setFormData({ ...formData, benefits: value })
                   }
                   placeholder="Enter job benefits"
                   rows={4}
