@@ -128,7 +128,7 @@ INSERT INTO "User" (
 
 ### Self-Hosted (Docker)
 ```dockerfile
-FROM node:18-alpine
+FROM node:22.11.0-alpine
 
 WORKDIR /app
 
@@ -137,6 +137,8 @@ RUN npm ci --only=production
 
 COPY . .
 RUN npx prisma generate
+
+ENV NODE_ENV=production
 
 EXPOSE 3000
 

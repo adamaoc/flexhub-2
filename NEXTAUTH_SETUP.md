@@ -51,7 +51,7 @@ npm run create-admin
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select existing
-3. Enable Google+ API
+3. Enable YouTube Data API v3 (if using Social Media feature)
 4. Create OAuth 2.0 credentials
 5. Add `http://localhost:3005/api/auth/callback/google` to authorized redirect URIs
 
