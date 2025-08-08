@@ -49,7 +49,7 @@ datasource db {
 ### Google OAuth
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select existing
-3. Enable Google+ API
+3. Enable YouTube Data API v3 (if using Social Media feature)
 4. Create OAuth 2.0 credentials
 5. Add authorized redirect URI: `https://yourdomain.com/api/auth/callback/google`
 6. Copy Client ID and Client Secret

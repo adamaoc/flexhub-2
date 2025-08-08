@@ -118,13 +118,7 @@ curl -X GET "http://localhost:3005/api/public/sites" \
 
 ## CORS Configuration
 
-The API is configured with comprehensive CORS headers to support cross-origin requests:
-
-- **Access-Control-Allow-Origin**: `*` (allows all origins)
-- **Access-Control-Allow-Methods**: `GET, POST, PUT, DELETE, OPTIONS`
-- **Access-Control-Allow-Headers**: `Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma`
-- **Access-Control-Allow-Credentials**: `false`
-- **Access-Control-Max-Age**: `86400` (24 hours)
+CORS is enabled centrally via the app’s headers configuration for all /api/public/* routes. You can make cross-origin requests without setting special headers on individual endpoints.
 
 ## Rate Limiting & Caching
 

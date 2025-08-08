@@ -2,17 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { youtubeService } from "@/lib/youtube";
 
-// CORS headers - comprehensive for production
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma",
-  "Access-Control-Allow-Credentials": "false",
-  "Access-Control-Expose-Headers": "Content-Length, X-JSON",
-  "Access-Control-Max-Age": "86400", // 24 hours
-};
-
 // GET /api/public/sites/[siteId]/social-media - Get all social media data for a site
 export async function GET(
   request: NextRequest,
@@ -22,59 +11,39 @@ export async function GET(
     const { siteId } = await params;
 
     // Check if site exists
-    const site = await prisma.site.findUnique({
-      where: { id: siteId },
-    });
+    const site = await prisma.site.findUnique({ where: { id: siteId } });
 
     if (!site) {
-      return NextResponse.json(
-        { error: "Site not found" },
-        { status: 404, headers: corsHeaders }
-      );
+      return NextResponse.json({ error: "Site not found" }, { status: 404 });
     }
 
     // Check if social media integration feature is enabled
     const socialMediaFeature = await prisma.siteFeature.findFirst({
-      where: {
-        siteId,
-        feature: "SOCIAL_MEDIA_INTEGRATION",
-        isEnabled: true,
-      },
+      where: { siteId, feature: "SOCIAL_MEDIA_INTEGRATION", isEnabled: true },
     });
 
     if (!socialMediaFeature) {
       return NextResponse.json(
         { error: "Social media integration is not enabled for this site" },
-        { status: 403, headers: corsHeaders }
+        { status: 403 }
       );
     }
 
     // Get all active channels with their enabled stats
     const channels = await prisma.socialMediaChannel.findMany({
-      where: {
-        siteId,
-        isActive: true,
-      },
+      where: { siteId, isActive: true },
       include: {
-        stats: {
-          where: {
-            isEnabled: true,
-          },
-          orderBy: { displayOrder: "asc" },
-        },
+        stats: { where: { isEnabled: true }, orderBy: { displayOrder: "asc" } },
       },
       orderBy: { displayOrder: "asc" },
     });
 
     if (channels.length === 0) {
-      return NextResponse.json(
-        {
-          channels: [],
-          count: 0,
-          lastUpdated: new Date().toISOString(),
-        },
-        { headers: corsHeaders }
-      );
+      return NextResponse.json({
+        channels: [],
+        count: 0,
+        lastUpdated: new Date().toISOString(),
+      });
     }
 
     // Fetch fresh data for each channel and update stats
@@ -92,14 +61,11 @@ export async function GET(
       })
     );
 
-    const response = NextResponse.json(
-      {
-        channels: channelsWithData,
-        count: channelsWithData.length,
-        lastUpdated: new Date().toISOString(),
-      },
-      { headers: corsHeaders }
-    );
+    const response = NextResponse.json({
+      channels: channelsWithData,
+      count: channelsWithData.length,
+      lastUpdated: new Date().toISOString(),
+    });
 
     // Cache for 5 minutes to reduce API calls and load
     response.headers.set(
@@ -111,22 +77,15 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching public social media data:", error);
     return NextResponse.json(
-      {
-        error: "Internal server error",
-        channels: [],
-        count: 0,
-      },
-      { status: 500, headers: corsHeaders }
+      { error: "Internal server error", channels: [], count: 0 },
+      { status: 500 }
     );
   }
 }
 
-// Handle OPTIONS request for CORS preflight
+// Handle OPTIONS request for CORS (handled centrally via next.config.ts headers)
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: corsHeaders,
-  });
+  return new NextResponse(null, { status: 200 });
 }
 
 // Helper function to update channel stats with fresh data

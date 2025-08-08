@@ -1,16 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// CORS headers - comprehensive for production
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma',
-  'Access-Control-Allow-Credentials': 'false',
-  'Access-Control-Expose-Headers': 'Content-Length, X-JSON',
-  'Access-Control-Max-Age': '86400', // 24 hours
-};
-
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ siteId: string }> }
@@ -21,39 +11,33 @@ export async function POST(
 
     // Verify site exists and has an active contact form
     const site = await prisma.site.findUnique({
-      where: {
-        id: siteId
-      },
+      where: { id: siteId },
       include: {
         contactForm: {
           include: {
             fields: {
-              where: {
-                isActive: true
-              },
-              orderBy: {
-                sortOrder: 'asc'
-              }
-            }
-          }
-        }
-      }
+              where: { isActive: true },
+              orderBy: { sortOrder: 'asc' },
+            },
+          },
+        },
+      },
     });
 
     if (!site) {
-      return NextResponse.json({ error: 'Site not found' }, { status: 404, headers: corsHeaders });
+      return NextResponse.json({ error: 'Site not found' }, { status: 404 });
     }
 
     if (!site.contactForm || !site.contactForm.isActive) {
-      return NextResponse.json({ error: 'Contact form not available' }, { status: 404, headers: corsHeaders });
+      return NextResponse.json({ error: 'Contact form not available' }, { status: 404 });
     }
 
     // Validate required fields
     const requiredFields = site.contactForm.fields.filter(field => field.isRequired);
-    const missingFields = [];
+    const missingFields: string[] = [];
 
     for (const field of requiredFields) {
-      if (!body.data || !body.data[field.fieldName] || body.data[field.fieldName].trim() === '') {
+      if (!body.data || !body.data[field.fieldName] || String(body.data[field.fieldName]).trim() === '') {
         missingFields.push(field.fieldLabel);
       }
     }
@@ -61,21 +45,19 @@ export async function POST(
     if (missingFields.length > 0) {
       return NextResponse.json({
         error: 'Missing required fields',
-        missingFields
-      }, { status: 400, headers: corsHeaders });
+        missingFields,
+      }, { status: 400 });
     }
 
     // Get client IP and user agent for basic tracking
-    const clientIp = request.headers.get('x-forwarded-for') || 
-                     request.headers.get('x-real-ip') || 
-                     'unknown';
+    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
     // Create the contact submission
     await prisma.contactSubmission.create({
       data: {
         contactFormId: site.contactForm.id,
-        siteId: siteId,
+        siteId,
         submitterIp: clientIp,
         submitterUserAgent: userAgent,
         submissionData: {
@@ -83,30 +65,21 @@ export async function POST(
             .filter(field => body.data && body.data[field.fieldName])
             .map(field => ({
               contactFormFieldId: field.id,
-              value: String(body.data[field.fieldName]).substring(0, 5000) // Limit length
-            }))
-        }
-      }
+              value: String(body.data[field.fieldName]).substring(0, 5000), // Limit length
+            })),
+        },
+      },
     });
 
     // Return success response without sensitive data
-    return NextResponse.json({
-      success: true,
-      message: 'Contact submitted successfully'
-    }, { status: 201, headers: corsHeaders });
-
+    return NextResponse.json({ success: true, message: 'Contact submitted successfully' }, { status: 201 });
   } catch (error) {
     console.error('Error submitting contact form:', error);
-    return NextResponse.json({ 
-      error: 'There was a problem submitting your message. Please try again.' 
-    }, { status: 500, headers: corsHeaders });
+    return NextResponse.json({ error: 'There was a problem submitting your message. Please try again.' }, { status: 500 });
   }
 }
 
-// Handle preflight requests for CORS
+// Handle preflight requests for CORS (handled centrally via next.config.ts headers)
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: corsHeaders,
-  });
-} 
+  return new NextResponse(null, { status: 200 });
+}
