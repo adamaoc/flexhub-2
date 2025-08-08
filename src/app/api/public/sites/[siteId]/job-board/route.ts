@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { JobType, ExperienceLevel, RemoteWorkType } from "@prisma/client";
+import { JobType, ExperienceLevel, RemoteWorkType, Prisma } from "@prisma/client";
 
 // GET /api/public/sites/[siteId]/job-board - Get public job listings with search and filters
 export async function GET(
@@ -45,14 +45,14 @@ export async function GET(
     const limit = parseInt(searchParams.get("limit") || "20");
     const skip = (page - 1) * limit;
 
-    // Build where clause for active job listings only
-    const where: any = {
+// Build where clause for active job listings only
+    const where: Prisma.JobListingWhereInput = {
       siteId,
       status: "ACTIVE",
-      company: { isActive: true },
+      company: {
+        is: { isActive: true },
+      },
     };
-
-    // Add filters
     if (jobType) {
       where.jobType = jobType as JobType;
     }
@@ -81,14 +81,14 @@ export async function GET(
       where.salaryMin = { lte: parseInt(salaryMax) };
     }
 
-    // Add search functionality
+// Add search functionality
     if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
         { description: { contains: search, mode: "insensitive" } },
         { location: { contains: search, mode: "insensitive" } },
-        { company: { name: { contains: search, mode: "insensitive" } } },
-        { company: { industry: { contains: search, mode: "insensitive" } } },
+        { company: { is: { name: { contains: search, mode: "insensitive" } } } },
+        { company: { is: { industry: { contains: search, mode: "insensitive" } } } },
       ];
     }
 

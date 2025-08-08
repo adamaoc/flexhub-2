@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,11 +69,7 @@ export function CompanyManager({ siteId }: CompanyManagerProps) {
     founded: "",
   });
 
-  useEffect(() => {
-    fetchCompanies();
-  }, [siteId]);
-
-  const fetchCompanies = async () => {
+  const fetchCompanies = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/sites/${siteId}/companies`);
@@ -89,7 +86,11 @@ export function CompanyManager({ siteId }: CompanyManagerProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [siteId]);
+
+  useEffect(() => {
+    fetchCompanies();
+  }, [fetchCompanies]);
 
   const handleCreateCompany = async () => {
     try {
@@ -350,10 +351,12 @@ export function CompanyManager({ siteId }: CompanyManagerProps) {
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2">
                   {company.logo && (
-                    <img
+                    <Image
                       src={company.logo}
                       alt={company.name}
-                      className="w-8 h-8 rounded object-cover"
+                      width={32}
+                      height={32}
+                      className="rounded object-cover"
                     />
                   )}
                   <div>
