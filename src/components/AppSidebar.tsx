@@ -30,6 +30,7 @@ import {
   Calendar,
   Newspaper,
   Award,
+  Briefcase,
 } from "lucide-react";
 import {
   Sidebar,
@@ -137,6 +138,12 @@ const FEATURE_CONFIG = {
     icon: Calendar,
     href: "/events",
     description: "Manage events",
+  },
+  JOB_BOARD: {
+    name: "Job Board",
+    icon: Briefcase,
+    href: "/job-board",
+    description: "Manage job listings and companies",
   },
 } as const;
 

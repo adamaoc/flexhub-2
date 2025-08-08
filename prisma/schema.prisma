@@ -56,6 +56,7 @@ model User {
   invitedBy     String?
   invitedAt     DateTime?
   lastLogin     DateTime?
+  currentSiteId String?   // ID of the site the user is currently using
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -63,6 +64,7 @@ model User {
   sessions Session[]
   invites  Invite[] @relation("InvitedBy")
   sites    Site[]   @relation("SiteUsers")
+  currentSite Site? @relation("CurrentSite", fields: [currentSiteId], references: [id])
 
   @@map("users")
 }
@@ -102,6 +104,7 @@ model Site {
   logo        String?  // URL to the site logo
   coverImage  String?  // URL to the site cover image
   users       User[]   @relation("SiteUsers")
+  currentUsers User[]  @relation("CurrentSite")
   pages     Page[]
   blogPosts BlogPost[]
   mediaFiles MediaFile[]
@@ -110,6 +113,8 @@ model Site {
   contactForm ContactForm?
   contactSubmissions ContactSubmission[]
   socialMediaChannels SocialMediaChannel[]
+  companies Company[]
+  jobListings JobListing[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -390,6 +395,54 @@ model DevisionMediaBooking {
   @@index([createdAt])
 }
 
+// Job Board Models
+model Company {
+  id          String   @id @default(uuid())
+  name        String
+  description String?  // HTML content
+  website     String?
+  logo        String?  // URL to company logo
+  location    String?
+  industry    String?
+  size        String?  // e.g., "10-50 employees", "100-500 employees"
+  founded     Int?     // Year founded
+  isActive    Boolean  @default(true)
+  siteId      String
+  site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  jobListings JobListing[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("companies")
+}
+
+model JobListing {
+  id              String           @id @default(uuid())
+  title           String
+  description     String           // HTML content
+  requirements    String?          // HTML content
+  benefits        String?          // HTML content
+  jobType         JobType
+  status          JobStatus        @default(ACTIVE)
+  experienceLevel ExperienceLevel?
+  remoteWorkType  RemoteWorkType?
+  salaryMin       Int?             // Annual salary in USD
+  salaryMax       Int?             // Annual salary in USD
+  salaryCurrency  String           @default("USD")
+  location        String?
+  applicationUrl  String?
+  image           String?          // URL to job listing image
+  companyId       String
+  company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  siteId          String
+  site            Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  expiresAt       DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@map("job_listings")
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -412,6 +465,7 @@ enum FeatureType {
   CUSTOM_FORMS
   MEMBER_AREA
   EVENT_MANAGEMENT
+  JOB_BOARD
 }
 
 enum ContactFormFieldType {
@@ -524,6 +578,38 @@ enum DevisionBookingStatus {
   COMPLETED
   CANCELLED
   NO_SHOW
+}
+
+// Job Board Enums
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  FREELANCE
+  TEMPORARY
+  VOLUNTEER
+}
+
+enum JobStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  FILLED
+}
+
+enum ExperienceLevel {
+  ENTRY_LEVEL
+  JUNIOR
+  MID_LEVEL
+  SENIOR
+  EXECUTIVE
+}
+
+enum RemoteWorkType {
+  ON_SITE
+  REMOTE
+  HYBRID
 }
 
 // Local and Untold Platform Tables

@@ -78,6 +78,11 @@ const FEATURE_DEFINITIONS = [
     label: "Event Management",
     description: "Manage events and registrations",
   },
+  {
+    value: "JOB_BOARD",
+    label: "Job Board",
+    description: "Manage job listings and company profiles",
+  },
 ];
 
 export async function GET() {
