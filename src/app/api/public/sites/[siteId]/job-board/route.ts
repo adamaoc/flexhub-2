@@ -67,6 +67,7 @@ export async function GET(
     const skip = (page - 1) * limit;
 
     // Build where clause for active job listings only
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       siteId,
       status: "ACTIVE",

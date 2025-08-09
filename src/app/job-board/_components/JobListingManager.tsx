@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -68,13 +68,7 @@ export function JobListingManager({ siteId }: JobListingManagerProps) {
     }
   }, [siteId]);
 
-  useEffect(() => {
-    if (siteId) {
-      fetchJobListings(currentPage);
-    }
-  }, [siteId, currentPage]);
-
-  const fetchJobListings = async (page: number = 1) => {
+  const fetchJobListings = useCallback(async (page: number = 1) => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -92,7 +86,13 @@ export function JobListingManager({ siteId }: JobListingManagerProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [siteId]);
+
+  useEffect(() => {
+    if (siteId) {
+      fetchJobListings(currentPage);
+    }
+  }, [siteId, currentPage, fetchJobListings]);
 
   const handleEditJobListing = (jobListing: JobListing) => {
     router.push(`/job-board/${jobListing.id}/edit`);

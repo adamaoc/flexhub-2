@@ -11,7 +11,6 @@ import {
   generateMediaFileKey,
   getSpacesKeyFromUrl,
   isSpacesUrl,
-  sanitizeSiteName,
 } from "@/lib/spaces";
 
 export async function POST(
