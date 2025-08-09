@@ -128,6 +128,20 @@ export function CurrentSiteProvider({ children }: { children: ReactNode }) {
         if (mounted) {
           localStorage.setItem("selectedSiteId", selectedSite.id);
         }
+
+        // Update the current site in the database to ensure server-side components use the correct site
+        try {
+          await fetch("/api/users/current-site", {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ siteId: selectedSite.id }),
+          });
+        } catch (error) {
+          console.error("Failed to update current site in database:", error);
+          // Don't throw here as this is a background operation
+        }
       } else {
         setCurrentSite(null);
         if (mounted) {
@@ -150,13 +164,26 @@ export function CurrentSiteProvider({ children }: { children: ReactNode }) {
     await fetchCurrentSite();
   }, [fetchCurrentSite]);
 
-  // Custom setCurrentSite function that also persists to localStorage
+  // Custom setCurrentSite function that also persists to localStorage and database
   const setCurrentSitePersistent = useCallback(
-    (site: Site | null) => {
+    async (site: Site | null) => {
       setCurrentSite(site);
       if (mounted) {
         if (site) {
           localStorage.setItem("selectedSiteId", site.id);
+          // Update the current site in the database
+          try {
+            await fetch("/api/users/current-site", {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ siteId: site.id }),
+            });
+          } catch (error) {
+            console.error("Failed to update current site in database:", error);
+            // Don't throw here as this is a background operation
+          }
         } else {
           localStorage.removeItem("selectedSiteId");
         }
