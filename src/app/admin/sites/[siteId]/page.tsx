@@ -27,25 +27,20 @@ export default function EditSitePage() {
   const fetchSite = useCallback(async () => {
     try {
       setLoading(true);
-      console.log("🔍 Fetching site with ID:", siteId);
       const response = await fetch(`/api/sites/${siteId}`);
-
-      console.log("🔍 Response status:", response.status);
 
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error("Site not found");
         }
         const errorData = await response.json();
-        console.log("🔍 Error data:", errorData);
         throw new Error(errorData.error || "Failed to fetch site");
       }
 
       const data = await response.json();
-      console.log("🔍 Site data received:", data);
       setSite(data.site);
     } catch (err) {
-      console.error("🔍 Error fetching site:", err);
+      console.error("Error fetching site:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
