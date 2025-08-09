@@ -27,21 +27,8 @@ export function SiteSwitcher() {
     try {
       setIsSwitching(true);
 
-      // Update the current site in the database
-      const response = await fetch("/api/users/current-site", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ siteId: site.id }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update current site");
-      }
-
-      // Update the local state
-      setCurrentSite(site);
+      // Update the local state (this will also update the database)
+      await setCurrentSite(site);
       setSwitchModalOpen(false);
 
       // Refresh the page to ensure server components get the new site
