@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { JobType, JobStatus } from "@prisma/client";
+import { JobType, JobStatus, Prisma } from "@prisma/client";
 
 // GET /api/sites/[siteId]/job-listings - Get all job listings for a site
 export async function GET(
@@ -72,8 +72,7 @@ export async function GET(
     const skip = (page - 1) * limit;
 
     // Build where clause
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {
+    const where: Prisma.JobListingWhereInput = {
       siteId,
     };
 
@@ -94,7 +93,7 @@ export async function GET(
         { title: { contains: search, mode: "insensitive" } },
         { description: { contains: search, mode: "insensitive" } },
         { location: { contains: search, mode: "insensitive" } },
-        { company: { name: { contains: search, mode: "insensitive" } } },
+        { company: { is: { name: { contains: search, mode: "insensitive" } } } },
       ];
     }
 

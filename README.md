@@ -13,15 +13,15 @@ A secure, invite-based content management system built with Next.js, NextAuth.js
 ## 🛠️ Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
-- **Authentication**: NextAuth.js v5
+- **Authentication**: NextAuth.js v4
 - **Database**: PostgreSQL with Prisma ORM
-- **Styling**: Tailwind CSS v4
+- **Styling**: Tailwind CSS v3
 - **Language**: TypeScript
 - **OAuth Providers**: Google, GitHub
 
 ## 📋 Prerequisites
 
-- Node.js 18+
+- Node.js 22.11+
 - PostgreSQL database
 - GitHub OAuth App (optional)
 - Google OAuth App (optional)

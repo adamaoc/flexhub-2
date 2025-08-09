@@ -428,11 +428,7 @@ The social media integration must be enabled for each site:
 
 ### CORS Configuration
 
-The public API includes comprehensive CORS headers:
-
-- `Access-Control-Allow-Origin: *`
-- `Access-Control-Allow-Methods: GET, OPTIONS`
-- Appropriate headers for cross-origin requests
+CORS is enabled centrally via the app’s headers configuration for all /api/public/* routes. No per-endpoint CORS headers are required.
 
 ## Troubleshooting
 

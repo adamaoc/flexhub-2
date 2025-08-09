@@ -1,17 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { JobType, ExperienceLevel, RemoteWorkType } from "@prisma/client";
-
-// CORS headers - comprehensive for production
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma",
-  "Access-Control-Allow-Credentials": "false",
-  "Access-Control-Expose-Headers": "Content-Length, X-JSON",
-  "Access-Control-Max-Age": "86400", // 24 hours
-};
+import { JobType, ExperienceLevel, RemoteWorkType, Prisma } from "@prisma/client";
 
 // GET /api/public/sites/[siteId]/job-board - Get public job listings with search and filters
 export async function GET(
@@ -22,33 +11,23 @@ export async function GET(
     const { siteId } = await params;
 
     // Check if site exists
-    const site = await prisma.site.findUnique({
-      where: {
-        id: siteId,
-      },
-    });
+    const site = await prisma.site.findUnique({ where: { id: siteId } });
 
     if (!site) {
-      return NextResponse.json(
-        { error: "Site not found" },
-        { status: 404, headers: corsHeaders }
-      );
+      return NextResponse.json({ error: "Site not found" }, { status: 404 });
     }
 
     // Check if job board feature is enabled
     const jobBoardFeature = await prisma.siteFeature.findUnique({
       where: {
-        siteId_feature: {
-          siteId,
-          feature: "JOB_BOARD",
-        },
+        siteId_feature: { siteId, feature: "JOB_BOARD" },
       },
     });
 
     if (!jobBoardFeature?.isEnabled) {
       return NextResponse.json(
         { error: "Job board feature is not enabled for this site" },
-        { status: 403, headers: corsHeaders }
+        { status: 403 }
       );
     }
 
@@ -67,16 +46,13 @@ export async function GET(
     const skip = (page - 1) * limit;
 
     // Build where clause for active job listings only
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {
+    const where: Prisma.JobListingWhereInput = {
       siteId,
       status: "ACTIVE",
       company: {
-        isActive: true,
+        is: { isActive: true },
       },
     };
-
-    // Add filters
     if (jobType) {
       where.jobType = jobType as JobType;
     }
@@ -111,8 +87,8 @@ export async function GET(
         { title: { contains: search, mode: "insensitive" } },
         { description: { contains: search, mode: "insensitive" } },
         { location: { contains: search, mode: "insensitive" } },
-        { company: { name: { contains: search, mode: "insensitive" } } },
-        { company: { industry: { contains: search, mode: "insensitive" } } },
+        { company: { is: { name: { contains: search, mode: "insensitive" } } } },
+        { company: { is: { industry: { contains: search, mode: "insensitive" } } } },
       ];
     }
 
@@ -133,9 +109,7 @@ export async function GET(
             },
           },
         },
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
@@ -145,57 +119,25 @@ export async function GET(
     // Get available filters for the frontend
     const [jobTypes, companies, locations, experienceLevels, remoteWorkTypes] =
       await Promise.all([
-        prisma.jobListing.findMany({
-          where: { siteId, status: "ACTIVE" },
-          select: { jobType: true },
-          distinct: ["jobType"],
-        }),
-        prisma.company.findMany({
-          where: { siteId, isActive: true },
-          select: { id: true, name: true },
-          orderBy: { name: "asc" },
-        }),
-        prisma.jobListing.findMany({
-          where: { siteId, status: "ACTIVE", location: { not: null } },
-          select: { location: true },
-          distinct: ["location"],
-        }),
-        prisma.jobListing.findMany({
-          where: { siteId, status: "ACTIVE", experienceLevel: { not: null } },
-          select: { experienceLevel: true },
-          distinct: ["experienceLevel"],
-        }),
-        prisma.jobListing.findMany({
-          where: { siteId, status: "ACTIVE", remoteWorkType: { not: null } },
-          select: { remoteWorkType: true },
-          distinct: ["remoteWorkType"],
-        }),
+        prisma.jobListing.findMany({ where: { siteId, status: "ACTIVE" }, select: { jobType: true }, distinct: ["jobType"] }),
+        prisma.company.findMany({ where: { siteId, isActive: true }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+        prisma.jobListing.findMany({ where: { siteId, status: "ACTIVE", location: { not: null } }, select: { location: true }, distinct: ["location"] }),
+        prisma.jobListing.findMany({ where: { siteId, status: "ACTIVE", experienceLevel: { not: null } }, select: { experienceLevel: true }, distinct: ["experienceLevel"] }),
+        prisma.jobListing.findMany({ where: { siteId, status: "ACTIVE", remoteWorkType: { not: null } }, select: { remoteWorkType: true }, distinct: ["remoteWorkType"] }),
       ]);
 
-    const response = NextResponse.json(
-      {
-        jobListings,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
-        },
-        filters: {
-          jobTypes: jobTypes.map((j) => j.jobType),
-          companies: companies.map((c) => ({ id: c.id, name: c.name })),
-          locations: locations.map((l) => l.location).filter(Boolean),
-          experienceLevels: experienceLevels
-            .map((e) => e.experienceLevel)
-            .filter(Boolean),
-          remoteWorkTypes: remoteWorkTypes
-            .map((r) => r.remoteWorkType)
-            .filter(Boolean),
-        },
-        lastUpdated: new Date().toISOString(),
+    const response = NextResponse.json({
+      jobListings,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+      filters: {
+        jobTypes: jobTypes.map((j) => j.jobType),
+        companies: companies.map((c) => ({ id: c.id, name: c.name })),
+        locations: locations.map((l) => l.location).filter(Boolean),
+        experienceLevels: experienceLevels.map((e) => e.experienceLevel).filter(Boolean),
+        remoteWorkTypes: remoteWorkTypes.map((r) => r.remoteWorkType).filter(Boolean),
       },
-      { headers: corsHeaders }
-    );
+      lastUpdated: new Date().toISOString(),
+    });
 
     // Cache for 5 minutes to reduce load
     response.headers.set(
@@ -211,15 +153,9 @@ export async function GET(
         error: "Internal server error",
         jobListings: [],
         pagination: { page: 1, limit: 20, total: 0, pages: 0 },
-        filters: {
-          jobTypes: [],
-          companies: [],
-          locations: [],
-          experienceLevels: [],
-          remoteWorkTypes: [],
-        },
+        filters: { jobTypes: [], companies: [], locations: [], experienceLevels: [], remoteWorkTypes: [] },
       },
-      { status: 500, headers: corsHeaders }
+      { status: 500 }
     );
   }
 }

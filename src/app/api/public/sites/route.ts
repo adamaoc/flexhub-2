@@ -1,17 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// CORS headers - comprehensive for production
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma",
-  "Access-Control-Allow-Credentials": "false",
-  "Access-Control-Expose-Headers": "Content-Length, X-JSON",
-  "Access-Control-Max-Age": "86400", // 24 hours
-};
-
 // GET /api/public/sites - Get all sites with basic details and features (public endpoint)
 export async function GET() {
   try {
@@ -63,15 +52,11 @@ export async function GET() {
       updatedAt: site.updatedAt,
     }));
 
-    // Add response headers for public access and caching
-    const response = NextResponse.json(
-      {
-        sites: transformedSites,
-        count: transformedSites.length,
-        lastUpdated: new Date().toISOString(),
-      },
-      { headers: corsHeaders }
-    );
+    const response = NextResponse.json({
+      sites: transformedSites,
+      count: transformedSites.length,
+      lastUpdated: new Date().toISOString(),
+    });
 
     // Cache for 10 minutes to reduce load
     response.headers.set(
@@ -88,18 +73,12 @@ export async function GET() {
         sites: [],
         count: 0,
       },
-      {
-        status: 500,
-        headers: corsHeaders,
-      }
+      { status: 500 }
     );
   }
 }
 
-// Handle OPTIONS request for CORS preflight
+// Handle OPTIONS request for CORS preflight (handled centrally via next.config.ts headers)
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: corsHeaders,
-  });
+  return new NextResponse(null, { status: 200 });
 }
