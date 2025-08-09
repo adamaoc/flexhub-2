@@ -65,6 +65,10 @@ const FEATURE_DEFINITIONS = {
     displayName: "Event Management",
     description: "Manage events and registrations",
   },
+  JOB_BOARD: {
+    displayName: "Job Board",
+    description: "Manage job listings and company profiles",
+  },
 } as const;
 
 // GET - Fetch all features for a site
