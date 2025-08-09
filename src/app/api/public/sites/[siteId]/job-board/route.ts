@@ -45,7 +45,7 @@ export async function GET(
     const limit = parseInt(searchParams.get("limit") || "20");
     const skip = (page - 1) * limit;
 
-// Build where clause for active job listings only
+    // Build where clause for active job listings only
     const where: Prisma.JobListingWhereInput = {
       siteId,
       status: "ACTIVE",
@@ -81,7 +81,7 @@ export async function GET(
       where.salaryMin = { lte: parseInt(salaryMax) };
     }
 
-// Add search functionality
+    // Add search functionality
     if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -68,31 +68,34 @@ export function JobListingManager({ siteId }: JobListingManagerProps) {
     }
   }, [siteId]);
 
+  const fetchJobListings = useCallback(
+    async (page: number = 1) => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `/api/sites/${siteId}/job-listings?page=${page}&limit=10`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setJobListings(data.jobListings || []);
+          setTotalPages(data.pagination.pages);
+          setTotalItems(data.pagination.total);
+          setCurrentPage(data.pagination.page);
+        }
+      } catch (error) {
+        console.error("Error fetching job listings:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [siteId]
+  );
+
   useEffect(() => {
     if (siteId) {
       fetchJobListings(currentPage);
     }
-  }, [siteId, currentPage]);
-
-  const fetchJobListings = async (page: number = 1) => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `/api/sites/${siteId}/job-listings?page=${page}&limit=10`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setJobListings(data.jobListings || []);
-        setTotalPages(data.pagination.pages);
-        setTotalItems(data.pagination.total);
-        setCurrentPage(data.pagination.page);
-      }
-    } catch (error) {
-      console.error("Error fetching job listings:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [siteId, currentPage, fetchJobListings]);
 
   const handleEditJobListing = (jobListing: JobListing) => {
     router.push(`/job-board/${jobListing.id}/edit`);

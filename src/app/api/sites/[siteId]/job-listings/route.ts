@@ -71,7 +71,7 @@ export async function GET(
     const limit = parseInt(searchParams.get("limit") || "20");
     const skip = (page - 1) * limit;
 
-// Build where clause
+    // Build where clause
     const where: Prisma.JobListingWhereInput = {
       siteId,
     };
@@ -88,7 +88,7 @@ export async function GET(
       where.companyId = companyId;
     }
 
-if (search) {
+    if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
         { description: { contains: search, mode: "insensitive" } },
