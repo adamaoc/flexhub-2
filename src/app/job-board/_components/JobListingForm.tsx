@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WysiwygEditor } from "@/components/ui/wysiwyg-editor";
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   Select,
   SelectContent,
@@ -355,17 +356,13 @@ export function JobListingForm({ mode, jobListingId }: JobListingFormProps) {
                   />
                 </div>
               </div>
-              <div>
-                <Label htmlFor="image">Job Image URL</Label>
-                <Input
-                  id="image"
-                  value={formData.image}
-                  onChange={(e) =>
-                    setFormData({ ...formData, image: e.target.value })
-                  }
-                  placeholder="https://example.com/job-image.jpg"
-                />
-              </div>
+              <ImageUpload
+                label="Job Image"
+                value={formData.image}
+                onChange={(url) => setFormData({ ...formData, image: url })}
+                uploadEndpoint={`/api/sites/${currentSite?.id}/job-listings/images`}
+                placeholder="https://example.com/job-image.jpg"
+              />
             </CardContent>
           </Card>
 
@@ -401,13 +398,15 @@ export function JobListingForm({ mode, jobListingId }: JobListingFormProps) {
           </Card>
 
           {/* Additional Settings */}
-          <Card>
+          <Card className="mb-8">
             <CardHeader>
               <CardTitle>Additional Settings</CardTitle>
             </CardHeader>
             <CardContent>
-              <div>
-                <Label htmlFor="expiresAt">Expires At</Label>
+              <div className="flex items-center gap-4">
+                <Label htmlFor="expiresAt" className="whitespace-nowrap">
+                  Expires At
+                </Label>
                 <Input
                   id="expiresAt"
                   type="datetime-local"
@@ -415,13 +414,14 @@ export function JobListingForm({ mode, jobListingId }: JobListingFormProps) {
                   onChange={(e) =>
                     setFormData({ ...formData, expiresAt: e.target.value })
                   }
+                  className="w-auto"
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Submit Button */}
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-end gap-4 mb-8">
             <Button
               type="button"
               variant="outline"
@@ -454,8 +454,22 @@ export function JobListingForm({ mode, jobListingId }: JobListingFormProps) {
               )}
             </Button>
           </div>
+
+          {/* Professional Disclaimer */}
+          <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <p className="text-sm text-gray-600 text-center">
+              <strong>Privacy Notice:</strong> All information entered in this
+              form will be publicly visible on your job board. Please ensure
+              that you only include information that you are comfortable sharing
+              publicly. Do not include sensitive personal data, internal company
+              information, or confidential details.
+            </p>
+          </div>
         </div>
       </form>
+
+      {/* Additional bottom spacing */}
+      <div className="pb-16"></div>
     </div>
   );
 }
