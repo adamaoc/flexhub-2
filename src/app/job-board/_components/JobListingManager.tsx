@@ -68,25 +68,28 @@ export function JobListingManager({ siteId }: JobListingManagerProps) {
     }
   }, [siteId]);
 
-  const fetchJobListings = useCallback(async (page: number = 1) => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `/api/sites/${siteId}/job-listings?page=${page}&limit=10`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setJobListings(data.jobListings || []);
-        setTotalPages(data.pagination.pages);
-        setTotalItems(data.pagination.total);
-        setCurrentPage(data.pagination.page);
+  const fetchJobListings = useCallback(
+    async (page: number = 1) => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `/api/sites/${siteId}/job-listings?page=${page}&limit=10`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setJobListings(data.jobListings || []);
+          setTotalPages(data.pagination.pages);
+          setTotalItems(data.pagination.total);
+          setCurrentPage(data.pagination.page);
+        }
+      } catch (error) {
+        console.error("Error fetching job listings:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching job listings:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [siteId]);
+    },
+    [siteId]
+  );
 
   useEffect(() => {
     if (siteId) {
