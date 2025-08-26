@@ -69,6 +69,10 @@ const FEATURE_DEFINITIONS = {
     displayName: "Job Board",
     description: "Manage job listings and company profiles",
   },
+  WORKS: {
+    displayName: "Works",
+    description: "Showcase portfolio work and projects",
+  },
 } as const;
 
 // GET - Fetch all features for a site

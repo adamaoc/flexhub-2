@@ -115,6 +115,7 @@ model Site {
   socialMediaChannels SocialMediaChannel[]
   companies Company[]
   jobListings JobListing[]
+  works Work[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -443,6 +444,33 @@ model JobListing {
   @@map("job_listings")
 }
 
+// Works/Portfolio Model
+model Work {
+  id           String       @id @default(uuid())
+  title        String
+  category     WorkCategory
+  image        String?      // Image URL (can be empty for placeholder)
+  logo         String?      // Logo URL (company/client logo)
+  description  String       // Project description (HTML markup allowed)
+  excerpt      String?      // Plain text excerpt for summaries
+  type         WorkType     @default(WORK)
+  date         DateTime     // Project date
+  client       String?      // Client name (optional)
+  featured     Boolean      @default(false) // Whether to show on homepage
+  technologies String[]     // Array of technologies used
+  duration     String?      // Project duration
+  results      String?      // Measurable results/outcomes
+  githubUrl    String?      // GitHub link for CLI tools
+  videoUrl     String?      // Video link for video projects
+  url          String?      // External project link
+  siteId       String
+  site         Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("works")
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -466,6 +494,7 @@ enum FeatureType {
   MEMBER_AREA
   EVENT_MANAGEMENT
   JOB_BOARD
+  WORKS
 }
 
 enum ContactFormFieldType {
@@ -841,4 +870,21 @@ enum LocalAndUntoldSettingType {
   NUMBER
   BOOLEAN
   JSON
+}
+
+// Works/Portfolio Enums
+enum WorkCategory {
+  WEBSITE
+  VIDEO
+  CLI_TOOL
+  SEO
+  SOCIAL_MEDIA
+  ADVERTISING
+  DESIGN
+  CONSULTING
+}
+
+enum WorkType {
+  WORK
+  WEBSITE
 }

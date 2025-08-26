@@ -31,6 +31,7 @@ import {
   Newspaper,
   Award,
   Briefcase,
+  FolderOpen,
 } from "lucide-react";
 import {
   Sidebar,
@@ -144,6 +145,12 @@ const FEATURE_CONFIG = {
     icon: Briefcase,
     href: "/job-board",
     description: "Manage job listings and companies",
+  },
+  WORKS: {
+    name: "Works",
+    icon: FolderOpen,
+    href: "/works",
+    description: "Showcase portfolio work and projects",
   },
 } as const;
 
