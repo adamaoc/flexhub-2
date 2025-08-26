@@ -83,6 +83,11 @@ const FEATURE_DEFINITIONS = [
     label: "Job Board",
     description: "Manage job listings and company profiles",
   },
+  {
+    value: "WORKS",
+    label: "Works",
+    description: "Showcase portfolio work and projects",
+  },
 ];
 
 export async function GET() {
